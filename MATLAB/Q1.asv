@@ -1,0 +1,26 @@
+
+
+
+fprintf('Maior número flutuante (realmax): %e\n', realmax);
+fprintf('Menor número flutuante (realmin): %e\n', realmin);
+fprintf('Epsilon da máquina (eps): %e\n', epsilon_maq);
+
+v= 1.0;
+
+
+for i = 1:length([1e-15, 1e15])
+    x = valores_x(i);
+    
+    % Calculando a expressão ((1+x)-1)/x
+    f_x = ((1.0 + x) - 1.0) / x;
+    
+    % Calculando os erros absolutos e relativos
+    erro_absoluto = abs(valor_exato_teorico - f_x);
+    erro_relativo = erro_absoluto / abs(valor_exato_teorico);
+    
+    % Exibindo os resultados
+    fprintf('Para x = %e:\n', x);
+    fprintf('  Valor calculado: %1.15f\n', f_x);
+    fprintf('  Erro Absoluto:   %e\n', erro_absoluto);
+    fprintf('  Erro Relativo:   %e\n\n', erro_relativo);
+end
