@@ -10,9 +10,8 @@
 
 # 1. Tolerância no erro absoluto: |f(b) - f(a)| < t
 # 2. Tolerância no valor da função: |f(c)| < t
-# 3. Tolerância no erro relativo: |b - a| / |a| < t
-# 4. Número máximo de iterações (para evitar loops infinitos) [*]
-# 5. Valor exato encontrado: f(c) == 0 -Adicionado-
+# 3. Número máximo de iterações (para evitar loops infinitos) [*]
+# 4. Valor exato encontrado: f(c) == 0 -Adicionado-
 
 # 3. Implemente as operações usando:
 # • Ponto flutuante com precisão normal (float64),
@@ -163,7 +162,7 @@ data_struct = {
                    F[2][2][-1] if F[2][2] else 0]
 }
 
-
+pd.DataFrame(data_struct).to_csv('resultadosQ3.csv', index=False)
 
 # Exibindo formatado
 print(pd.DataFrame(data_struct))

@@ -154,23 +154,21 @@ def ponto_fixo(x, t):
     name = "Ponto Fixo"
     it = 0
     e = [] 
-    start_time = time.time()
+    start_time = time.perf_counter() # perf_counter é mais preciso que time()
 
-    # MUDANÇA: Calcula o próximo valor ANTES do loop para a checagem do while funcionar
-    x.append(phi(x[0])) 
-
-    while abs(x[it + 1] - x[it]) > t and it < 100: 
-        e.append(min(abs(x[it] - Raizes[0]), abs(x[it] - Raizes[1]), abs(x[it] - Raizes[2]))) 
+    while it < 100: 
+    
+        x_novo = phi(x[it])
+        x.append(x_novo)
         it += 1
         
-        x.append(phi(x[it]))
+        e.append( min([abs(x[it] - r) for r in Raizes]) )
 
-        if dphi(x[it-1]) < 1: 
-            print("Processo convergente")
-        elif dphi(x[it-1]) > 1:
-            print("Processo divergente")
+       
+        if abs(x[it] - x[it-1]) < t: # evita que eu deixe de salvar o ultimo erro caso o critério de parada seja atingido
+            break
 
-    tempo = time.time() - start_time
+    tempo = time.perf_counter() - start_time
     return it, e, name, tempo
 
 # Newton-Raphson:
@@ -181,17 +179,22 @@ def newton(x, t):
     name = "Newton-Raphson"
     it = 0
     e = [] 
-    start_time = time.time()
+    start_time = time.perf_counter()
 
-    x.append(x[0] - f(x[0])/df(x[0]))
-
-    while abs(x[it + 1] - x[it]) > t and it < 100: 
-        e.append(min(abs(x[it] - Raizes[0]), abs(x[it] - Raizes[1]), abs(x[it] - Raizes[2]))) 
+    while it < 100: 
+        if df(x[it]) == 0: break 
+            
+        x_novo = x[it] - f(x[it])/df(x[it])
+        x.append(x_novo)
         it += 1
         
-        x.append(x[it] - f(x[it])/df(x[it]))
+       
+        e.append(min([abs(x[it] - r) for r in Raizes]))
 
-    tempo = time.time() - start_time
+        if abs(x[it] - x[it-1]) < t:
+            break
+
+    tempo = time.perf_counter() - start_time
     return it, e, name, tempo
 
 
@@ -202,21 +205,24 @@ def newton(x, t):
 #Ordem de convergencia e 1 + (raiz de 5 - 1)/2 = 1.618 (convergencia super linear)                  
 def secante(x, t):
     name = "Secante"
-    it = 0
+    it = 1 
     e = [] 
-    start_time = time.time()
+    start_time = time.perf_counter()
 
-
-    while abs(x[it + 1] - x[it]) > t and it < 100: 
-        e.append(min(abs(x[it+1] - Raizes[0]), abs(x[it+1] - Raizes[1]), abs(x[it+1] - Raizes[2]))) 
+    while it < 100: 
         
-        novo_x = x[it+1] - (((x[it+1] - x[it]) * f(x[it+1])) / (f(x[it+1]) - f(x[it])))
+        if f(x[it]) - f(x[it-1]) == 0: break 
+            
+        novo_x = x[it] - (((x[it] - x[it-1]) * f(x[it])) / (f(x[it]) - f(x[it-1])))
         x.append(novo_x)
-        
         it += 1
+        
+        e.append(min([abs(x[it] - r) for r in Raizes]))
 
-    tempo = time.time() - start_time
-    
+        if abs(x[it] - x[it-1]) < t:
+            break
+
+    tempo = time.perf_counter() - start_time
     return it, e, name, tempo
 
 R = [ponto_fixo([0.5], 1e-5), newton([0.5], 1e-5), secante([0.5, 0.6], 1e-5)]
@@ -248,7 +254,7 @@ plt.figure(figsize=(10, 6))
 cores = {'Ponto Fixo': '#3498db', 'Newton-Raphson': '#2ecc71', 'Secante': '#e74c3c'}
 
 for i in R:
-    plt.plot(range(1, i[0] + 1), i[1], marker='o', linewidth=2, label=i[2], color=cores[i[2]])
+    plt.plot(range(1, len(i[1]) + 1), i[1], marker='o', linewidth=2, label=i[2], color=cores[i[2]])
     # i[0] é o número de iterações, i[1] é a lista de erros, i[2] é o nome do método
 plt.yscale('log') 
 plt.xlabel('Número de Iterações')
