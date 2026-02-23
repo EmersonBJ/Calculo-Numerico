@@ -3,138 +3,16 @@
 # de busca de zeros.
 # Descrição da Tarefa:
 # 1. Escolha uma função simples, como f(x) = e^x − 2 ou f(x) = cos(x) − x.
-
-import numpy as np
-import math
-
-# Reescrevi a função definindo desde o começo os três tipos de precisão para facilitar a comparação posterior. A função f(x) é definida para retornar os valores em float64, float32 e truncado, dependendo do modo selecionado. 
-# Dessa forma evitamos que o erro seja visto apenas na conta final, mas sim em cada etapa do processo, o que é mais realista para entender o impacto dos erros de arredondamento e truncamento.
-
-def f(x, mode='float64'):
-    if mode == 'math.trunc': 
-        return math.trunc(((math.exp(x)) - 2)*10e3)/10e3 # Truncamento com 4 casas decimais
-    
-    elif mode == 'float32':
-        return np.float32(np.exp(np.float32(x)) - 2)
-    
-    return math.exp(x) - 2 # Valor em float64 por padrão, que é a precisão normal do Python.
-
-# f(x) =  e^x - 2 ->  x * log(e) = log(2) -> x = log(2) -> raiz = log(2)
-raiz = math.log(2) #raiz exata para comparação de erros
-(a,b,t) = -2, 2, 0.0000000000000001
-
-
 # 2. Programe os métodos da bisseção e da Falsa Posição.
 # O método da bisseção (eq. 2.1 do livro [1]) e a Falsa Posição (eq. 2.3 do livro [2]) são métodos de busca de raízes que utilizam intervalos para encontrar soluções aproximadas. O método da bisseção divide o intervalo em duas partes iguais e seleciona o subintervalo onde a função muda de sinal, enquanto o método da falsa posição utiliza uma linha reta (secante) para aproximar a função e encontrar a raiz.
-
-
-# Método de bisseção
-# Selecionamos extremos em uma função que garantam a existência de uma raiz entre eles, tal que f(a) e f(b) tenham sinais opostos. Pelo Teorema de Bolzano (Seção 2.1 [1] e Seção de revisão em cálculo 1.1 [2]), podemos garantir que, se o produto das funções for menor que zero, haverá ao menos uma raiz entre esses dois pontos.
-# [1] x^(k) = [a^(k) + b^(k)] / 2
-
-def bissecao(a, b, t, mode='float64'): # aqui eu apenas juntei todas as 3 contas em um definidor, para poder facilmente mudar os parâmetros.
-    # Aqui a, b e t são os parâmetros de entrada, e mode determina a precisão utilizada (float64, float32 ou truncamento).
-    it = 0 # contador de iterações
-    e = [] # lista para armazenar os erros em cada iteração, para análise posterior.
-
-
-    while abs(b - a) > t: # A distância entre a e b nos mostra quão grande é o erro uma vez que, como a raiz está entre a e b, a distância nos mostra a quantidade de resultados possíveis para a raiz.
-        #Parametros iniciais:
-        x = (a + b) / 2 # Equação da bisseção para calcular o ponto médio entre a e b.
-        it +=1
-
-        #Garantir precisao do resultado:
-        if mode == 'math.trunc': # Se escolhermos o modo de truncamento, aplicamos a função de truncamento ao x (resultado da bisseção) para simular a perda de precisão.
-            x = math.trunc(x * 10e3) / 10e3
-        elif mode == 'float32': # Se escolhermos o modo de float32, convertemos x para float32 para simular a precisão reduzida.
-            x = np.float32(x)
-        elif mode == 'float64': # Redundancia para garantir que o modo float64 seja aplicado, embora seja o padrão.
-            pass
-
-        e.append(float(abs(x - raiz))) # Armazena o erro absoluto em relação à raiz exata para análise de convergência.
-
-        if f(x, mode) == 0: # observa se encontramos a raiz exata, o que é improvável, mas possível.
-            return float(x), it, e
-        
-        elif f(a, mode) * f(x, mode) < 0: # Regra de Bolzano, acompanhada do modo de precisão selecionado.
-            b = x # Se a função muda de sinal entre a e x, então a raiz está entre a e x, b desce para x.
-
-        else:
-            a = x # Caso contrário, a raiz está entre x e b, então a sobe para x.
-
-    return float(x), it, e # Retorna a aproximação da raiz e o número de iterações realizadas.
-
-B = [bissecao(a,b,t, mode='float64'), bissecao(a,b,t, mode='float32'), bissecao(a,b,t, mode='math.trunc')]
-# a = -2, b = 2, t = 10e3, modo float64,  a = -2, b = 2, t = 10e3, modo float32, a = -2, b = 2, t = 10e3, modo truncamento (4 casas decimais)
-# Salvo no vetor B. Para cada item do vetor teremos 3 coordenadas: a aproximação da raiz (x), o número de iterações (it) e o vetor de erros para análise de convergência (e).
-
-print("Bisseção com float64 e Iterações:", B[0]), print("Bisseção com float32 e Iterações:", B[1]), print("Bisseção com truncamento e Iterações:", B[2])
-# pra registro: alem dos problemas que tive na elaboraçao do racunho temos alguns problemas na criação dos vetores
-# no modo de truncamento, parece ser muito pequeno e ele nao cria uma lista, o que me da problema na hora de ler tudo de uma só vez na elaboraçao do grafico. Posso optar por faze-los separadamente ou tentar forçar a adição de um 0 quando o modo for truncamento *corrigiu sozinho*
-# alem disso a opçao float 32 é registrada no vetor como nome e nao funçao tal qual "float32(xxx)", vou contornar forçando a converçao para float antes de salvar o que nao deve alterar o resultado final uma vez que a conta ja foi feita em x32."
-            
 # * Testar se conseguimos salvar em um vetor todos os pares (a, b) para encontrar múltiplas raízes. [fiz no arquivo de rascunho, mas não é necessário para a função escolhida, que tem apenas uma raiz real, então optei por deixar o código mais simples e direto para o caso específico]
 # * Criterios de parada:
 
 # 1. Tolerância no erro absoluto: |f(b) - f(a)| < t
 # 2. Tolerância no valor da função: |f(c)| < t
 # 3. Tolerância no erro relativo: |b - a| / |a| < t
-
 # 4. Número máximo de iterações (para evitar loops infinitos) [*]
-
-# 5. Valor exato encontrado: f(c) == 0 -Adicioado-
-
-
-
-
-
-
-# Método Falsa Posição
-# Variação do método da bisseção que costuma convergir mais rápido.
-# O método avalia quão próximo o resultado está de zero. Os pontos 'a' e 'b' definem uma reta secante cuja intersecção com o eixo x fornece a nova aproximação.
-# [2] p = b - f(b) * (b-a)/[f(b)-f(a)]
-# Podemos usar o mesmo princípio de Bolzano, porém mudando a forma de calcular o ponto intermediário entre 'a' e 'b'.
-
-
-def falsa_posicao(a, b, t, mode='float64'): # Assim como na função de bisseção, a função de falsa posição recebe os mesmos parâmetros de entrada, permitindo uma comparação direta entre os dois métodos sob as mesmas condições de precisão e tolerância.
-    it = 0 # como o resultado já foi apresentado pelo return anterior eu reciclei a variável de iteração para usar aqui, evitando criar uma nova variável desnecessária.
-    x = a
-    e = [] # lista para armazenar os erros em cada iteração, para análise posterior.
-
-    while abs(b - a) > t and it < 100: # aproximação é menor que a tolerância ou Limite de segurança [*]
-        # Problema de lógica: usando o 'while', a condição de continuação é a negação da condição de parada. Se queremos parar quando a distância for menor que a tolerância OU quando o número de iterações exceder 100, o loop deve continuar enquanto a distância for maior que a tolerância E o número de iterações for menor que 100.
-        # O argumento de parada de A é ¬(A)
-        it += 1
-        
-        
-        # Fórmula da falsa Posição
-        p = (a * f(b, mode) - b * f(a, mode)) / (f(b, mode) - f(a, mode))
-
-        if mode == 'math.trunc': p = math.trunc(p*10e3)/10e3
-        if mode == 'float32': p = np.float32(p)
-        if mode == 'float64': pass
-
-        e.append(float(abs(p - raiz))) # Armazena o erro absoluto em relação à raiz exata para análise de convergência.
-        
-        if f(x, mode) == 0: # observa se encontramos a raiz exata, o que é improvável, mas possível.
-            return float(x), it, e
-
-        if f(a, mode) * f(p, mode) < 0:
-            b = p
-
-        else:
-            a = p
-            
-        x = p
-    return float(x), it, e
-
-F = [falsa_posicao(a,b,t, mode='float64'), falsa_posicao(a,b,t, mode='float32'), falsa_posicao(a,b,t, mode='math.trunc')]
-
-# a = -2, b = 2, t = 10e3, modo float64,  a = -2, b = 2, t = 10e3, modo float32, a = -2, b = 2, t = 10e3, modo truncamento (4 casas decimais)
-#Salvos no vetor F, que tambem tera 3 coordenadas para cada item: a aproximação da raiz (x), o número de iterações (it) e o vetor de erros para análise de convergência (erros).
-
-print("Falsa Posição com float64 e Iterações:", F[0]), print("Falsa Posição com float32 e Iterações:", F[1]), print("Falsa Posição com truncamento e Iterações:", F[2]) 
-
+# 5. Valor exato encontrado: f(c) == 0 -Adicionado-
 
 # 3. Implemente as operações usando:
 # • Ponto flutuante com precisão normal (float64),
@@ -150,7 +28,128 @@ print("Falsa Posição com float64 e Iterações:", F[0]), print("Falsa Posiçã
 # Entrega: Código em Python ou outra linguagem, tabelas e gráficos mostrando convergência, discussão sobre estabilidade numérica.
 
 
-# Tabela de Dados, para analise de consistencia
+# Reescrevi a função definindo desde o começo os três tipos de precisão para facilitar a comparação posterior. A função f(x) é definida para retornar os valores em float64, float32 e truncado, dependendo do modo selecionado. 
+# Dessa forma evitamos que o erro seja visto apenas na conta final, mas sim em cada etapa do processo, o que é mais realista para entender o impacto dos erros de arredondamento e truncamento.
+import numpy as np
+import math
+
+def f(x, mode='float64'):
+    if mode == 'math.trunc': 
+        return math.trunc(((math.exp(x)) - 2)*10e3)/10e3 # Truncamento com 4 casas decimais
+    
+    elif mode == 'float32':
+        return np.float32(np.exp(x) - 2)
+    
+    return math.exp(x) - 2 # Valor em float64 por padrão, que é a precisão normal do Python.
+
+# f(x) =  e^x - 2 ->  x * log(e) = log(2) -> x = log(2) -> raiz = log(2)
+raiz = math.log(2) # raiz exata para comparação de erros
+(a,b,t) = -2, 2, 0.0000000000000001
+
+
+
+# Método de bisseção
+# Selecionamos extremos em uma função que garantam a existência de uma raiz entre eles, tal que f(a) e f(b) tenham sinais opostos. Pelo Teorema de Bolzano (Seção 2.1 [1] e Seção de revisão em cálculo 1.1 [2]), podemos garantir que, se o produto das funções for menor que zero, haverá ao menos uma raiz entre esses dois pontos.
+# [1] x^(k) = [a^(k) + b^(k)] / 2
+
+def bissecao(a, b, t, mode='float64'): # aqui eu apenas juntei todas as 3 contas em um definidor, para poder facilmente mudar os parâmetros.
+    # Aqui a, b e t são os parâmetros de entrada, e mode determina a precisão utilizada (float64, float32 ou truncamento).
+    it = 0 # contador de iterações
+    e = [] # lista para armazenar os erros em cada iteração, para análise posterior.
+
+
+    while abs(b - a) > t and it < 100: # (critério de parada 1 e 2)
+        #Parametros iniciais:
+        x = (a + b) / 2 # Equação da bisseção para calcular o ponto médio entre a e b.
+        it +=1
+
+        #Garantir precisao do resultado:
+        if mode == 'math.trunc': # Se escolhermos o modo de truncamento, aplicamos a função de truncamento ao x (resultado da bisseção) para simular a perda de precisão.
+            x = math.trunc(x * 10e3) / 10e3
+        elif mode == 'float32': # Se escolhermos o modo de float32, convertemos x para float32 para simular a precisão reduzida.
+            x = np.float32(x)
+        elif mode == 'float64': # Redundância para garantir que o modo float64 seja aplicado, embora seja o padrão.
+            pass
+
+        e.append(float(abs(x - raiz))) # Armazena o erro absoluto em relação à raiz exata para análise de convergência.
+
+        if f(x, mode) == 0: # Observa se encontramos a raiz exata, o que é improvável, mas possível.
+            return float(x), it, e
+        
+        elif f(a, mode) * f(x, mode) < 0: # Regra de Bolzano, acompanhada do modo de precisão selecionado.
+            b = x # Se a função muda de sinal entre a e x, então a raiz está entre a e x, b desce para x.
+
+        else:
+            a = x # Caso contrário, a raiz está entre x e b, então a sobe para x.
+
+    return float(x), it, e # Retorna a aproximação da raiz e o número de iterações realizadas.
+
+B = [bissecao(a,b,t, mode='float64'), bissecao(a,b,t, mode='float32'), bissecao(a,b,t, mode='math.trunc')]
+# a = -2, b = 2, t = 10e3, modo float64,  a = -2, b = 2, t = 10e3, modo float32, a = -2, b = 2, t = 10e3, modo truncamento (4 casas decimais)
+# Salvo no vetor B. Para cada item do vetor teremos 3 coordenadas: a aproximação da raiz (x), o número de iterações (it) e o vetor de erros para análise de convergência (e).
+
+print("Bisseção com float64 e Iterações:", B[0]), print("Bisseção com float32 e Iterações:", B[1]), print("Bisseção com truncamento e Iterações:", B[2])
+# Pra registro: além dos problemas que tive na elaboração do rascunho, temos alguns problemas na criação dos vetores.
+# No modo de truncamento, parece ser muito pequeno e ele não cria uma lista, o que me dá problema na hora de ler tudo de uma só vez na elaboração do gráfico. Posso optar por fazê-los separadamente ou tentar forçar a adição de um 0 quando o modo for truncamento *corrigiu sozinho*.
+# Além disso, a opção float32 é registrada no vetor como nome e não função tal qual "float32(xxx)", vou contornar forçando a conversão para float antes de salvar, o que não deve alterar o resultado final uma vez que a conta já foi feita em x32.
+
+
+
+
+
+
+
+
+# Método Falsa Posição
+# Variação do método da bisseção que costuma convergir mais rápido.
+# O método avalia quão próximo o resultado está de zero. Os pontos 'a' e 'b' definem uma reta secante cuja intersecção com o eixo x fornece a nova aproximação.
+# [2] p = b - f(b) * (b-a)/[f(b)-f(a)]
+# Podemos usar o mesmo princípio de Bolzano, porém mudando a forma de calcular o ponto intermediário entre 'a' e 'b'.
+
+
+def falsa_posicao(a, b, t, mode='float64'): # Assim como na função de bisseção, a função de falsa posição recebe os mesmos parâmetros de entrada, permitindo uma comparação direta entre os dois métodos sob as mesmas condições de precisão e tolerância.
+    it = 0 # Como o resultado já foi apresentado pelo return anterior, eu reciclei a variável de iteração para usar aqui, evitando criar uma nova variável desnecessária.
+    x = a
+    e = [] # Lista para armazenar os erros em cada iteração, para análise posterior.
+
+    while abs(b - a) > t and it < 100: # Aproximação é menor que a tolerância ou Limitada a 100 iterações (critério de parada 1 e 2)
+        # Problema de lógica: usando o 'while', a condição de continuação é a negação da condição de parada. Se queremos parar quando a distância for menor que a tolerância OU quando o número de iterações exceder 100, o loop deve continuar enquanto a distância for maior que a tolerância E o número de iterações for menor que 100.
+        # O argumento de parada de A é ¬(A)
+        it += 1
+        
+        
+        # Fórmula da falsa Posição
+        p = (a * f(b, mode) - b * f(a, mode)) / (f(b, mode) - f(a, mode))
+
+        if mode == 'math.trunc': p = math.trunc(p*10e3)/10e3
+        if mode == 'float32': p = np.float32(p)
+        if mode == 'float64': pass
+
+        e.append(float(abs(p - raiz))) # Armazena o erro absoluto em relação à raiz exata para análise de convergência.
+        
+        if f(x, mode) == 0: # Observa se encontramos a raiz exata, o que é improvável, mas possível.
+            return float(x), it, e
+
+        if f(a, mode) * f(p, mode) < 0:
+            b = p
+
+        else:
+            a = p
+            
+        x = p
+    return float(x), it, e
+
+F = [falsa_posicao(a,b,t, mode='float64'), falsa_posicao(a,b,t, mode='float32'), falsa_posicao(a,b,t, mode='math.trunc')]
+
+# a = -2, b = 2, t = 10e3, modo float64,  a = -2, b = 2, t = 10e3, modo float32, a = -2, b = 2, t = 10e3, modo truncamento (4 casas decimais)
+# Salvos no vetor F, que também terá 3 coordenadas para cada item: a aproximação da raiz (x), o número de iterações (it) e o vetor de erros para análise de convergência (erros).
+
+print("Falsa Posição com float64 e Iterações:", F[0]), print("Falsa Posição com float32 e Iterações:", F[1]), print("Falsa Posição com truncamento e Iterações:", F[2]) 
+
+
+
+
+# Tabela de Dados, para análise de consistência
 import pandas as pd
 
 data_struct = {
@@ -164,10 +163,10 @@ data_struct = {
                    F[2][2][-1] if F[2][2] else 0]
 }
 
-df_console = pd.DataFrame(data_struct)
+
 
 # Exibindo formatado
-print(df_console.to_string(index=False, float_format=lambda x: f"{x:.2e}" if x < 0.01 else f"{x:.6f}"))
+print(pd.DataFrame(data_struct))
 
 
 #Ambos os livros definem uma iteração como um passo num processo repetitivo onde a aproximação atual xk​ é usada para calcular uma nova aproximação x k+1​ , gerando uma sequência {xk​} que esperamos convergir para a solução exata α.
@@ -177,14 +176,14 @@ import matplotlib.pyplot as plt
 #Bisseção:  
 
 
-
 plt.figure(figsize=(10, 6))
 
 # Nomes para as legendas
 labels = ['Float64 (Normal)', 'Float32 (Reduzida)', 'Truncamento (4 casas)']
 cores = ['#2ecc71', '#3498db', '#e74c3c'] # Cores para cada linha do gráfico
 
-# lê os vetores em trios de dados para 3 coordenadas
+# Lê os vetores em trios de dados para 3 coordenadas
+
 for i in range(3):
     # B[x][y] e, que x define o qual dos trios de cooordenadas usaremos e y define qual coordenada do trio usaremos, no caso, a coordenada de erros (2) para plotar o gráfico de convergência.
     plt.plot(B[i][2], label=f'Bisseção - {labels[i]}', color=cores[i], linewidth=2)
