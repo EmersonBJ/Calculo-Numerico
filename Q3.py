@@ -195,6 +195,8 @@ plt.title('Impacto da Precisão na Convergência (Bisseção)')
 plt.legend()
 plt.grid(True, which="both", ls="-", alpha=0.5)
 plt.show()
+
+
 # Referência:
 # [1] QUARTERONI, Alfio; SALERI, Fausto. Scientific computing with MATLAB and Octave. 2. ed. Berlin: Springer, 2006. (Texts in computational science and engineering, 2).
 # [2] BURDEN, Richard L.; FAIRES, J. Douglas. Numerical analysis. 9. ed. Boston: Brooks/Cole; Cengage Learning, 2011.
