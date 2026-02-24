@@ -184,8 +184,8 @@ def newton(x, t):
     while it < 100: 
         if df(x[it]) == 0: break 
             
-        x_novo = x[it] - f(x[it])/df(x[it])
-        x.append(x_novo)
+
+        x.append(x[it] - f(x[it])/df(x[it]))
         it += 1
         
        
@@ -213,8 +213,8 @@ def secante(x, t):
         
         if f(x[it]) - f(x[it-1]) == 0: break 
             
-        novo_x = x[it] - (((x[it] - x[it-1]) * f(x[it])) / (f(x[it]) - f(x[it-1])))
-        x.append(novo_x)
+       
+        x.append(x[it] - (((x[it] - x[it-1]) * f(x[it])) / (f(x[it]) - f(x[it-1]))))
         it += 1
         
         e.append(min([abs(x[it] - r) for r in Raizes]))
