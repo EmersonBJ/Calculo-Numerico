@@ -193,7 +193,7 @@ def newton(x, t):
 
         if abs(x[it] - x[it-1]) < t:
             break
-
+    
     tempo = time.perf_counter() - start_time
     return it, e, name, tempo
 
@@ -246,7 +246,7 @@ print("\n RANKING DE EFICIÊNCIA")
 print(df_results.to_string(index=False))
 
 # Salvar em arquivo CSV com notação científica
-df_results.to_csv('resultados_q4.csv', index=False)
+df_results.to_csv('./ResultadosPY/resultados_q4.csv', index=False)
 print("\nResultados salvos em 'resultados_q4.csv'")
 
 plt.figure(figsize=(10, 6))
@@ -256,7 +256,7 @@ cores = {'Ponto Fixo': '#3498db', 'Newton-Raphson': '#2ecc71', 'Secante': '#e74c
 for i in R:
     plt.plot(range(1, len(i[1]) + 1), i[1], marker='o', linewidth=2, label=i[2], color=cores[i[2]])
     # i[0] é o número de iterações, i[1] é a lista de erros, i[2] é o nome do método
-plt.yscale('log') 
+plt.yscale('log') #dessa forma podemos ver o comportamento exponencial do erro, e comparar melhor a convergencia dos métodos
 plt.xlabel('Número de Iterações')
 plt.ylabel('Erro Absoluto')
 plt.title('Competição de Convergência: f(x) = x³ - 7x + 6')
@@ -264,3 +264,6 @@ plt.legend()
 plt.grid(True, which="both", ls="--", alpha=0.6)
 plt.show()
 
+
+# o x final nao e do interesse
+# alguns dos metodos ultillizados podem retardar o tempo de cada metodo, uma vez que usamos os mesmo para todos faz com que na comparaçao isso nao seja um problema.

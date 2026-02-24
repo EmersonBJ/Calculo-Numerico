@@ -162,7 +162,7 @@ data_struct = {
                    F[2][2][-1] if F[2][2] else 0]
 }
 
-pd.DataFrame(data_struct).to_csv('resultadosQ3.csv', index=False)
+pd.DataFrame(data_struct).to_csv('./ResultadosPY/resultadosQ3.csv', index=False)
 
 # Exibindo formatado
 print(pd.DataFrame(data_struct))
@@ -188,7 +188,7 @@ for i in range(3):
     plt.plot(B[i][2], label=f'Bisseção - {labels[i]}', color=cores[i], linewidth=2)
     # i varia de 0 a 2, sendo 0 para float64, 1 para float32 e 2 para truncamento.
 
-plt.yscale('log') # Escala logarítmica para ver a precisão sumindo
+plt.yscale('log') # Escala logarítmica para ver a precisão melhor, já que os erros podem variar em ordens de magnitude.
 plt.xlabel('Número de Iterações')
 plt.ylabel('Erro Absoluto |x - ln(2)|')
 plt.title('Impacto da Precisão na Convergência (Bisseção)')
