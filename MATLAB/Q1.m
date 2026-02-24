@@ -2,8 +2,8 @@ fprintf('Maior número flutuante (realmax): %e\n', realmax);
 fprintf('Menor número flutuante (realmin): %e\n', realmin);
 fprintf('Epsilon da máquina (eps): %e\n', eps);
 
-v= 1.0;
-a = [1e-15, 1e15];
+v= 1.0; %Valor exato da funcao
+a = [1e-15, 1e15]; %intervalo de texte
 
 for i = 1:length(a)
     x = a(i);
