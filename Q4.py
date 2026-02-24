@@ -158,8 +158,8 @@ def ponto_fixo(x, t):
 
     while it < 100: 
     
-        x_novo = phi(x[it])
-        x.append(x_novo)
+
+        x.append(phi(x[it]))
         it += 1
         
         e.append( min([abs(x[it] - r) for r in Raizes]) )
