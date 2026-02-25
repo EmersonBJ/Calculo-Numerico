@@ -197,6 +197,20 @@ plt.grid(True, which="both", ls="-", alpha=0.5)
 plt.show()
 
 
+#Grafico de convergencia para Falsa Posição:
+
+plt.figure(figsize=(10, 6))
+for i in range(3):
+    plt.plot(F[i][2], label=f'Falsa Posição - {labels[i]}', color=cores[i], linewidth=2)
+plt.yscale('log')
+plt.xlabel('Número de Iterações')
+plt.ylabel('Erro Absoluto |x - ln(2)|')
+plt.title('Impacto da Precisão na Convergência (Falsa Posição)')
+plt.legend()
+plt.grid(True, which="both", ls="-", alpha=0.5)
+plt.show()
+
+
 # Referência:
 # [1] QUARTERONI, Alfio; SALERI, Fausto. Scientific computing with MATLAB and Octave. 2. ed. Berlin: Springer, 2006. (Texts in computational science and engineering, 2).
 # [2] BURDEN, Richard L.; FAIRES, J. Douglas. Numerical analysis. 9. ed. Boston: Brooks/Cole; Cengage Learning, 2011.
