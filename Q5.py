@@ -139,14 +139,26 @@ R.sort(key=lambda x: x[1]) # Ordena pelo número de iterações [1] do vetor R
 # [x][y] x = método(Bissecao, Newton, Secante), y = (theta final, iterações, erros, nome do método, tempo)
 import pandas as pd
 
-
+# Usando um loop (list comprehension) para pegar os dados de R
+# Isso funciona não importa se R tem 9 linhas ou 1000 linhas
 data_struct = {
-    'Método': [R[0][3], R[1][3], R[2][3], R[3][3], R[4][3], R[5][3], R[6][3], R[7][3], R[8][3]],    
-    'Ângulo (rad)': [R[0][0], R[1][0], R[2][0], R[3][0], R[4][0], R[5][0], R[6][0], R[7][0], R[8][0]],
-    'Iterações': [R[0][1], R[1][1], R[2][1], R[3][1], R[4][1], R[5][1], R[6][1], R[7][1], R[8][1]],
-    'Tempo (s)': [R[0][4], R[1][4], R[2][4], R[3][4], R[4][4], R[5][4], R[6][4], R[7][4], R[8][4]]
+    'Método': [str(r[3]) for r in R],
+    'Ângulo (rad)': [str(r[0]) for r in R],
+    
+    # Aplicamos int() aqui para garantir que Iterações seja um número inteiro 
+    # e não herde o float64 da matriz R
+    'Iterações': [int(r[1]) for r in R], 
+    
+    'Tempo (s)': [str(r[4]) for r in R]
 }
+
 df = pd.DataFrame(data_struct)
+
+# Se a coluna 'Método' também for um número de identificação (1, 2, 3...) 
+# e estiver aparecendo como float (1.0, 2.0...), você pode forçar para inteiro ou texto:
+# df['Método'] = df['Método'].astype(int)  # Para IDs inteiros
+# df['Método'] = df['Método'].astype(str)  # Para nomes em texto
+
 print(df)
 df.to_csv('./ResultadosPY/Q5.csv', index=False)
 
