@@ -111,7 +111,7 @@ def falsa_posicao(a, b, t, mode='float64'): # Assim como na função de bisseç�
     x = a
     e = [] # Lista para armazenar os erros em cada iteração, para análise posterior.
 
-    while abs(b - a) > t and it < 100: # Aproximação é menor que a tolerância ou Limitada a 100 iterações (critério de parada 1 e 2)
+    while it < 100: # Aproximação é menor que a tolerância ou Limitada a 100 iterações (critério de parada 1 e 2)
         # Problema de lógica: usando o 'while', a condição de continuação é a negação da condição de parada. Se queremos parar quando a distância for menor que a tolerância OU quando o número de iterações exceder 100, o loop deve continuar enquanto a distância for maior que a tolerância E o número de iterações for menor que 100.
         # O argumento de parada de A é ¬(A)
         it += 1
@@ -119,13 +119,14 @@ def falsa_posicao(a, b, t, mode='float64'): # Assim como na função de bisseç�
         
         # Fórmula da falsa Posição
         p = (a * f(b, mode) - b * f(a, mode)) / (f(b, mode) - f(a, mode))
-
+        
         if mode == 'math.trunc': p = math.trunc(p*10e3)/10e3
         if mode == 'float32': p = np.float32(p)
         if mode == 'float64': pass
 
         e.append(float(abs(p - raiz))) # Armazena o erro absoluto em relação à raiz exata para análise de convergência.
-        
+        if abs(f(p, mode)) < t: return float(p), it, e
+
         if f(x, mode) == 0: # Observa se encontramos a raiz exata, o que é improvável, mas possível.
             return float(x), it, e
 
@@ -162,7 +163,7 @@ data_struct = {
                    F[2][2][-1] if F[2][2] else 0]
 }
 
-pd.DataFrame(data_struct).to_csv('./ResultadosPY/resultadosQ3.csv', index=False)
+pd.DataFrame(data_struct).to_csv('./ResultadosPY/Q3.csv', index=False)
 
 # Exibindo formatado
 print(pd.DataFrame(data_struct))
@@ -194,6 +195,7 @@ plt.ylabel('Erro Absoluto |x - ln(2)|')
 plt.title('Impacto da Precisão na Convergência (Bisseção)')
 plt.legend()
 plt.grid(True, which="both", ls="-", alpha=0.5)
+plt.savefig('./ResultadosPY/3.png', dpi=300)
 plt.show()
 
 
@@ -208,6 +210,7 @@ plt.ylabel('Erro Absoluto |x - ln(2)|')
 plt.title('Impacto da Precisão na Convergência (Falsa Posição)')
 plt.legend()
 plt.grid(True, which="both", ls="-", alpha=0.5)
+plt.savefig('./ResultadosPY/3.1.png', dpi=300)
 plt.show()
 
 

@@ -136,7 +136,7 @@ data_struct = {
 }
 df = pd.DataFrame(data_struct)
 print(df)
-df.to_csv('./ResultadosPY/resultadosQ5.csv', index=False)
+df.to_csv('./ResultadosPY/Q5.csv', index=False)
 
 import matplotlib.pyplot as plt
 
@@ -191,3 +191,4 @@ plt.legend(bbox_to_anchor=(1.05, 1), loc='upper left')
 plt.grid(True, which="both", ls="--", alpha=0.6)
 plt.tight_layout() # Ajusta a margem automaticamente para a legenda não ficar cortada
 plt.show()
+plt.savefig('./ResultadosPY/5.png', dpi=300)
