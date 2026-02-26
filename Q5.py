@@ -45,8 +45,14 @@ def Bissecao(a, b, t, mode = "float64"):
     start_time = time.perf_counter()
 
     while abs(b - a) > t and it < 100: 
-        c = (a + b) / 2
-        e.append(abs(c - Raizes)) 
+
+        if mode == "float32":
+            c = np.float32((a + b) / 2)
+        elif mode == "trunc":
+            c = np.trunc((a + b) / 2 * 10e3) / 10e3
+        elif mode == "float64":
+            c = (a + b) / 2
+        
 
         if f(c, mode) == 0:
             break
@@ -55,6 +61,7 @@ def Bissecao(a, b, t, mode = "float64"):
         else:
             a = c
         it += 1
+        e.append(abs(c - Raizes)) 
     theta = c
     tempo = time.perf_counter() - start_time
     return theta, it, e, name, tempo
@@ -70,16 +77,13 @@ def Newton(theta, t, mode = "float64"): # x, tolerancia, periodo, comprimento, m
         if df(theta[it], mode) == 0: break 
 
         if mode == "float32":
-            x_novo = np.float32(theta[it] - f(theta[it], mode)/df(theta[it], mode))
-            theta.append(np.float32(x_novo))
+            theta.append(np.float32(theta[it] - f(theta[it], mode)/df(theta[it], mode)))
             
         elif mode == "trunc":
-            x_novo = np.trunc((theta[it] - f(theta[it], mode)/df(theta[it], mode))*10e3)/10e3
-            theta.append(np.trunc(x_novo*10e3)/10e3)
+            theta.append((np.trunc((theta[it] - f(theta[it], mode)/df(theta[it], mode))*10e3)/10e3*10e3)/10e3)
 
         elif mode == "float64":
-            x_novo = theta[it] - f(theta[it], mode)/df(theta[it], mode)
-            theta.append(x_novo)
+            theta.append(theta[it] - f(theta[it], mode)/df(theta[it], mode))
 
         it += 1
         e.append(abs(theta[it] - Raizes))
@@ -100,16 +104,13 @@ def secante(theta, t, mode = "float64"):
         if f(theta[it], mode) - f(theta[it-1], mode) == 0: break 
 
         if mode == "float32":
-            novo_x = np.float32(theta[it] - (((theta[it] - theta[it-1]) * f(theta[it], mode)) / (f(theta[it], mode) - f(theta[it-1],  mode))))
-            theta.append(np.float32(novo_x))
+            theta.append(np.float32(theta[it] - (((theta[it] - theta[it-1]) * f(theta[it], mode)) / (f(theta[it], mode) - f(theta[it-1],  mode)))))
 
         elif mode == "trunc":
-            novo_x = np.trunc((theta[it] - (((theta[it] - theta[it-1]) * f(theta[it], mode)) / (f(theta[it], mode) - f(theta[it-1], mode))))*10e3)/10e3
-            theta.append(np.trunc(novo_x*10e3)/10e3)
+            theta.append(np.trunc((theta[it] - (((theta[it] - theta[it-1]) * f(theta[it], mode)) / (f(theta[it], mode) - f(theta[it-1], mode))))*10e3)/10e3)
 
         elif mode == "float64":        
-            novo_x = theta[it] - (((theta[it] - theta[it-1]) * f(theta[it], mode)) / (f(theta[it], mode) - f(theta[it-1], mode)))
-            theta.append(novo_x)
+            theta.append(theta[it] - (((theta[it] - theta[it-1]) * f(theta[it], mode)) / (f(theta[it], mode) - f(theta[it-1], mode))))
         
         it += 1
         e.append(abs(theta[it] - Raizes))
