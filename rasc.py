@@ -1,32 +1,26 @@
-import math
-import sympy as sp
 
-x = sp.symbols('x')
-# Para resolver equações transcendentais no sympy, usamos sp.log e nsolve para valor numérico
-equacao = sp.log(x + 1) + x - 2
-raiz_num = sp.nsolve(equacao, x, 1.0)
-print(f"Raiz encontrada via SymPy: {raiz_num}")
 
 class Func1:
-    Raizes = [1, 2, -3]
-    
-    @staticmethod
-    def f(x): return x**3 - 7*x + 6
-    @staticmethod
-    def df(x): return 3*x**2 - 7
-    @staticmethod
-    def phi(x): return (x**3 + 6)/7
-    @staticmethod
-    def dphi(x): return (3*x**2)/7
+    def f(self, x): return x**3 - 7*x + 6
+    #f'(x) = 3*x**2 - 7
+    def df(self, x): return 3*x**2 - 7
+    #Para comparaçao de erros:
+    Raizes = [1, 2, -3] 
+    def phi(self, x): return (x**3 +6)/7
+    def dphi(self, x): return (3*x**2)/7
 
 class Func2:
-    Raizes = [float(raiz_num)] 
-    
-    @staticmethod
-    def g(x): return math.log(x + 1) + x - 2
-    @staticmethod
-    def dg(x): return 1/(x + 1) + 1
-    @staticmethod
-    def phi_g(x): return 2 - math.log(x + 1)
-    @staticmethod
-    def dphi_g(x): return -1/(x + 1)
+    def g(self, x): return math.log(x + 1) + x - 2
+    def dg(self, x): return 1/(x + 1) + 1
+    Raizes = [1.20794] 
+
+    def phi_g(self, x): return 2 - math.log(x + 1)
+    def dphi_g(self, x): return -1/(x + 1)
+
+g = 9.81
+L = 1
+T = 2.0 #Período observado arbitrário.
+
+import math
+Raizes = math.asin((T / (2 * math.pi)) * math.sqrt(g / L))
+print(Raizes)

@@ -22,14 +22,14 @@ g = 9.81
 L = 1
 T = 2.0 #Período observado arbitrário.
 
-def f(theta, T, g, L, mode = "float64"):
+def f(theta, mode = "float64"):
     if mode == "float32":
         return np.float32(math.sin(theta) - (T / (2 * math.pi)) * math.sqrt(g / L))
     elif mode == "trunc":
         return round(math.sin(theta) - (T / (2 * math.pi)) * math.sqrt(g / L), 5)
     return math.sin(theta) - (T / (2 * math.pi)) * math.sqrt(g / L)
 
-def df(theta, T, g, L, mode = "float64"): 
+def df(theta, mode = "float64"): 
     if mode == "float32":
         return np.float32(math.cos(theta))
     elif mode == "trunc":
@@ -38,7 +38,7 @@ def df(theta, T, g, L, mode = "float64"):
 
 Raizes = math.asin((T / (2 * math.pi)) * math.sqrt(g / L)) #[1.49301 + k*math.pi, 1.64858 + k*math.pi] 
 
-def Bissecao(a, b, t, T, L, mode = "float64"):
+def Bissecao(a, b, t, mode = "float64"):
     name = f"Bisseção {mode}"
     it = 0
     e = [] 
@@ -48,9 +48,9 @@ def Bissecao(a, b, t, T, L, mode = "float64"):
         c = (a + b) / 2
         e.append(abs(c - Raizes)) 
 
-        if f(c, T, g, L) == 0:
+        if f(c, mode) == 0:
             break
-        elif f(a, T, g, L) * f(c, T, g, L) < 0:
+        elif f(a, mode) * f(c, mode) < 0:
             b = c
         else:
             a = c
@@ -60,25 +60,25 @@ def Bissecao(a, b, t, T, L, mode = "float64"):
     return theta, it, e, name, tempo
 
 
-def Newton(theta, t, T, L, mode = "float64"): # x, tolerancia, periodo, comprimento, modo de arredondamento
+def Newton(theta, t, mode = "float64"): # x, tolerancia, periodo, comprimento, modo de arredondamento
     name = f"Newton-Raphson {mode}"
     it = 0
     e = [] 
     start_time = time.perf_counter()
 
     while it < 100: 
-        if df(theta[it], T, g, L, mode) == 0: break 
+        if df(theta[it], mode) == 0: break 
 
         if mode == "float32":
-            x_novo = np.float32(theta[it] - f(theta[it], T, g, L, mode)/df(theta[it], T, g, L, mode))
+            x_novo = np.float32(theta[it] - f(theta[it], mode)/df(theta[it], mode))
             theta.append(np.float32(x_novo))
             
         elif mode == "trunc":
-            x_novo = np.trunc((theta[it] - f(theta[it], T, g, L, mode)/df(theta[it], T, g, L, mode))*10e3)/10e3
+            x_novo = np.trunc((theta[it] - f(theta[it], mode)/df(theta[it], mode))*10e3)/10e3
             theta.append(np.trunc(x_novo*10e3)/10e3)
 
         elif mode == "float64":
-            x_novo = theta[it] - f(theta[it], T, g, L, mode)/df(theta[it], T, g, L, mode)
+            x_novo = theta[it] - f(theta[it], mode)/df(theta[it], mode)
             theta.append(x_novo)
 
         it += 1
@@ -90,25 +90,25 @@ def Newton(theta, t, T, L, mode = "float64"): # x, tolerancia, periodo, comprime
     return theta[-1], it, e, name, tempo
 
 
-def secante(theta, t, T, L, mode = "float64"):
+def secante(theta, t, mode = "float64"):
     name = f"Secante {mode}"
     it = 1 
     e = [] 
     start_time = time.perf_counter()
 
     while it < 100: 
-        if f(theta[it], T, g, L, mode) - f(theta[it-1], T, g, L, mode) == 0: break 
+        if f(theta[it], mode) - f(theta[it-1], mode) == 0: break 
 
         if mode == "float32":
-            novo_x = np.float32(theta[it] - (((theta[it] - theta[it-1]) * f(theta[it], T, g, L, mode)) / (f(theta[it], T, g, L, mode) - f(theta[it-1], T, g, L, mode))))
+            novo_x = np.float32(theta[it] - (((theta[it] - theta[it-1]) * f(theta[it], mode)) / (f(theta[it], mode) - f(theta[it-1],  mode))))
             theta.append(np.float32(novo_x))
 
         elif mode == "trunc":
-            novo_x = np.trunc((theta[it] - (((theta[it] - theta[it-1]) * f(theta[it], T, g, L, mode)) / (f(theta[it], T, g, L, mode) - f(theta[it-1], T, g, L, mode))))*10e3)/10e3
+            novo_x = np.trunc((theta[it] - (((theta[it] - theta[it-1]) * f(theta[it], mode)) / (f(theta[it], mode) - f(theta[it-1], mode))))*10e3)/10e3
             theta.append(np.trunc(novo_x*10e3)/10e3)
 
         elif mode == "float64":        
-            novo_x = theta[it] - (((theta[it] - theta[it-1]) * f(theta[it], T, g, L, mode)) / (f(theta[it], T, g, L, mode) - f(theta[it-1], T, g, L, mode)))
+            novo_x = theta[it] - (((theta[it] - theta[it-1]) * f(theta[it], mode)) / (f(theta[it], mode) - f(theta[it-1], mode)))
             theta.append(novo_x)
         
         it += 1
@@ -122,7 +122,17 @@ def secante(theta, t, T, L, mode = "float64"):
     return theta[-1], it, e, name, tempo
 
 
-R = [Bissecao(0, math.pi/2, 1e-5, T, L,), Newton([0.5], 1e-5, T, L), secante([0.5, 0.6], 1e-5, T, L), Bissecao(0, math.pi/2, 1e-5, T, L, mode="float32"), Newton([0.5], 1e-5, T, L, mode="float32"), secante([0.5, 0.6], 1e-5, T, L, mode="float32"), Bissecao(0, math.pi/2, 1e-5, T, L, mode="trunc"), Newton([0.5], 1e-5, T, L, mode="trunc"), secante([0.5, 0.6], 1e-5, T, L, mode="trunc")]
+R = [
+    Bissecao(0, math.pi/2, 1e-5, mode="float64"), 
+    Newton([0.5], 1e-5, mode="float64"), 
+    secante([0.5, 0.6], 1e-5, mode="float64"), 
+    Bissecao(0, math.pi/2, 1e-5, mode="float32"), 
+    Newton([0.5], 1e-5, mode="float32"), 
+    secante([0.5, 0.6], 1e-5, mode="float32"), 
+    Bissecao(0, math.pi/2, 1e-5, mode="trunc"), 
+    Newton([0.5], 1e-5, mode="trunc"), 
+    secante([0.5, 0.6], 1e-5, mode="trunc")
+]
 R.sort(key=lambda x: x[1]) # Ordena pelo número de iterações [1] do vetor R
 # [x][y] x = método(Bissecao, Newton, Secante), y = (theta final, iterações, erros, nome do método, tempo)
 import pandas as pd
