@@ -190,5 +190,5 @@ plt.legend(bbox_to_anchor=(1.05, 1), loc='upper left')
 
 plt.grid(True, which="both", ls="--", alpha=0.6)
 plt.tight_layout() # Ajusta a margem automaticamente para a legenda não ficar cortada
-plt.show()
 plt.savefig('./ResultadosPY/5.png', dpi=300)
+plt.show()
