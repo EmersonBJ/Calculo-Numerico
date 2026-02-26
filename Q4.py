@@ -56,7 +56,7 @@ def ponto_fixo(x, t, func = Func1):
         x.append(func.phi(x[it]))
         it += 1
         
-        e.append( min([abs(x[it] - r) for r in func.Raizes]) )
+        e.append(min([abs(x[it] - r) for r in func.Raizes]) )
 
        
         if abs(x[it] - x[it-1]) < t: # evita que eu deixe de salvar o ultimo erro caso o critério de parada seja atingido

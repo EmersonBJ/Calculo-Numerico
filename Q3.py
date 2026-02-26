@@ -70,7 +70,7 @@ def bissecao(a, b, t, mode='float64'): # aqui eu apenas juntei todas as 3 contas
         elif mode == 'float64': # Redundância para garantir que o modo float64 seja aplicado, embora seja o padrão.
             pass
 
-        e.append(float(abs(x - raiz))) # Armazena o erro absoluto em relação à raiz exata para análise de convergência.
+        e.append((abs(float(x) - raiz))) # Armazena o erro absoluto em relação à raiz exata para análise de convergência.
 
         if f(x, mode) == 0: # Observa se encontramos a raiz exata, o que é improvável, mas possível.
             return x, it, e
@@ -87,7 +87,7 @@ B = [bissecao(a,b,t, mode='float64'), bissecao(a,b,t, mode='float32'), bissecao(
 # a = -2, b = 2, t = 10e3, modo float64,  a = -2, b = 2, t = 10e3, modo float32, a = -2, b = 2, t = 10e3, modo truncamento (4 casas decimais)
 # Salvo no vetor B. Para cada item do vetor teremos 3 coordenadas: a aproximação da raiz (x), o número de iterações (it) e o vetor de erros para análise de convergência (e).
 
-print("Bisseção com float64 e Iterações:", B[0][0]), print("Bisseção com float32 e Iterações:", B[1][0]), print("Bisseção com truncamento e Iterações:", B[2][0])
+#print("Bisseção com float64 e Iterações:", B[0][2]), print("Bisseção com float32 e Iterações:", B[1][2]), print("Bisseção com truncamento e Iterações:", B[2][0])
 # Pra registro: além dos problemas que tive na elaboração do rascunho, temos alguns problemas na criação dos vetores.
 # No modo de truncamento, parece ser muito pequeno e ele não cria uma lista, o que me dá problema na hora de ler tudo de uma só vez na elaboração do gráfico. Posso optar por fazê-los separadamente ou tentar forçar a adição de um 0 quando o modo for truncamento *corrigiu sozinho*.
 # Além disso, a opção float32 é registrada no vetor como nome e não função tal qual "float32(xxx)", vou contornar forçando a conversão para float antes de salvar, o que não deve alterar o resultado final uma vez que a conta já foi feita em x32.
@@ -124,8 +124,8 @@ def falsa_posicao(a, b, t, mode='float64'): # Assim como na função de bisseç�
         if mode == 'float32': p = np.float32(p)
         if mode == 'float64': pass
 
-        e.append(float(abs(p - raiz))) # Armazena o erro absoluto em relação à raiz exata para análise de convergência.
-        if abs(f(p, mode)) < t: return float(p), it, e
+        e.append((abs(float(p) - raiz))) # Armazena o erro absoluto em relação à raiz exata para análise de convergência.
+        if abs(f(p, mode)) < t: return p, it, e
 
         if f(x, mode) == 0: # Observa se encontramos a raiz exata, o que é improvável, mas possível.
             return x, it, e
@@ -144,7 +144,7 @@ F = [falsa_posicao(a,b,t, mode='float64'), falsa_posicao(a,b,t, mode='float32'),
 # a = -2, b = 2, t = 10e3, modo float64,  a = -2, b = 2, t = 10e3, modo float32, a = -2, b = 2, t = 10e3, modo truncamento (4 casas decimais)
 # Salvos no vetor F, que também terá 3 coordenadas para cada item: a aproximação da raiz (x), o número de iterações (it) e o vetor de erros para análise de convergência (erros).
 
-print("Falsa Posição com float64 e Iterações:", F[0]), print("Falsa Posição com float32 e Iterações:", F[1]), print("Falsa Posição com truncamento e Iterações:", F[2]) 
+#print("Falsa Posição com float64 e Iterações:", F[0][1]), print("Falsa Posição com float32 e Iterações:", F[1][1]), print("Falsa Posição com truncamento e Iterações:", F[2][1]) 
 
 
 

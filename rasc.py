@@ -75,8 +75,8 @@ def bissecao(a, b, t, mode='float64'): # aqui eu apenas juntei todas as 3 contas
         
         e.append(float(abs(x - raiz))) # Armazena o erro absoluto em relação à raiz exata para análise de convergência.
 
-        if f(x, mode) == 0: # Observa se encontramos a raiz exata, o que é improvável, mas possível.
-            return x
+        if f(x) == 0: # Observa se encontramos a raiz exata, o que é improvável, mas possível.
+            return e
         
         elif f(a, mode) * f(x, mode) < 0: # Regra de Bolzano, acompanhada do modo de precisão selecionado.
             b = x # Se a função muda de sinal entre a e x, então a raiz está entre a e x, b desce para x.
@@ -84,7 +84,11 @@ def bissecao(a, b, t, mode='float64'): # aqui eu apenas juntei todas as 3 contas
         else:
             a = x # Caso contrário, a raiz está entre x e b, então a sobe para x.
 
-    return x # Retorna a aproximação da raiz e o número de iterações realizadas.
+    return e # Retorna a aproximação da raiz e o número de iterações realizadas.
 
 
-print(bissecao(a,b,t, mode='float32')) # a = -2, b = 2, t = 10e3, modo float64
+#print(bissecao(a,b,t, mode='float32')) # a = -2, b = 2, t = 10e3, modo float64
+
+x = 0.6931472; raiz = 0.6931471805599453
+print(x, raiz, abs(x - raiz))
+print(float(x))
