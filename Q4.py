@@ -163,11 +163,18 @@ cores = {
     'Secante': '#9C6241'
 }
 
-fig, axes = plt.subplots(1, 2, figsize=(14, 6)) 
+import matplotlib.pyplot as plt
 
-for ax, resultados, titulo in zip(axes, [R, S], ['f(x) = x³ - 7x + 6', 'f(x) = ln(x + 1) + x - 2']):
+# Separamos os dados e os títulos para iterar sobre eles
+dados = [R, S]
+titulos = ['f(x) = x³ - 7x + 6', 'f(x) = ln(x + 1) + x - 2']
+fig_count = 1
+
+for resultados, titulo in zip(dados, titulos):
     
-    
+    # Cria uma figura separada para CADA iteração. 
+    # O figsize foi ajustado para (8, 6) para manter uma boa proporção individual.
+    fig, ax = plt.subplots(figsize=(8, 6)) 
     for i in resultados:
         ax.plot(range(1, len(i[1]) + 1), i[1], 
                 marker='o', markersize=8, linewidth=2.5, 
@@ -180,10 +187,13 @@ for ax, resultados, titulo in zip(axes, [R, S], ['f(x) = x³ - 7x + 6', 'f(x) = 
     ax.set_title(f'{titulo}', fontweight='bold', fontsize=14, color='#2c3e50')
     ax.legend(framealpha=0.9, edgecolor='black')
     ax.grid(True, which="both", ls="--", color='#57606f', alpha=0.3)
+    
+    # Exibe o gráfico atual antes de gerar o próximo
+    plt.tight_layout()
+    plt.savefig(f'./ResultadosPY/4.{fig_count}.png', dpi=300)
+    plt.show()
+    fig_count += 1
 
-plt.tight_layout()
-plt.savefig('./ResultadosPY/4.png', dpi=300)
-plt.show()
 
 
   # i[0] é o número de iterações, i[1] é a lista de erros, i[2] é o nome do método

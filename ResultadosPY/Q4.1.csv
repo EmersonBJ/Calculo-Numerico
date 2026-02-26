@@ -1,4 +1,4 @@
 Posição,Método,Iterações,Erro Final,Tempo (s)
-1,Newton-Raphson,5,0.0,9.099953e-06
-2,Secante,6,2.9917828214820474e-09,9.300013e-06
-3,Ponto Fixo,13,3.895872813686196e-06,1.900003e-05
+1,Newton-Raphson,5,0.0,9.000010e-06
+2,Secante,6,2.9917828214820474e-09,8.600007e-06
+3,Ponto Fixo,13,3.895872813686196e-06,1.750002e-05
