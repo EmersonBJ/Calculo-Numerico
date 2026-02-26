@@ -73,7 +73,7 @@ def bissecao(a, b, t, mode='float64'): # aqui eu apenas juntei todas as 3 contas
         e.append(float(abs(x - raiz))) # Armazena o erro absoluto em relação à raiz exata para análise de convergência.
 
         if f(x, mode) == 0: # Observa se encontramos a raiz exata, o que é improvável, mas possível.
-            return float(x), it, e
+            return x, it, e
         
         elif f(a, mode) * f(x, mode) < 0: # Regra de Bolzano, acompanhada do modo de precisão selecionado.
             b = x # Se a função muda de sinal entre a e x, então a raiz está entre a e x, b desce para x.
@@ -81,13 +81,13 @@ def bissecao(a, b, t, mode='float64'): # aqui eu apenas juntei todas as 3 contas
         else:
             a = x # Caso contrário, a raiz está entre x e b, então a sobe para x.
 
-    return float(x), it, e # Retorna a aproximação da raiz e o número de iterações realizadas.
+    return x, it, e # Retorna a aproximação da raiz e o número de iterações realizadas.
 
 B = [bissecao(a,b,t, mode='float64'), bissecao(a,b,t, mode='float32'), bissecao(a,b,t, mode='math.trunc')]
 # a = -2, b = 2, t = 10e3, modo float64,  a = -2, b = 2, t = 10e3, modo float32, a = -2, b = 2, t = 10e3, modo truncamento (4 casas decimais)
 # Salvo no vetor B. Para cada item do vetor teremos 3 coordenadas: a aproximação da raiz (x), o número de iterações (it) e o vetor de erros para análise de convergência (e).
 
-print("Bisseção com float64 e Iterações:", B[0]), print("Bisseção com float32 e Iterações:", B[1]), print("Bisseção com truncamento e Iterações:", B[2])
+print("Bisseção com float64 e Iterações:", B[0][0]), print("Bisseção com float32 e Iterações:", B[1][0]), print("Bisseção com truncamento e Iterações:", B[2][0])
 # Pra registro: além dos problemas que tive na elaboração do rascunho, temos alguns problemas na criação dos vetores.
 # No modo de truncamento, parece ser muito pequeno e ele não cria uma lista, o que me dá problema na hora de ler tudo de uma só vez na elaboração do gráfico. Posso optar por fazê-los separadamente ou tentar forçar a adição de um 0 quando o modo for truncamento *corrigiu sozinho*.
 # Além disso, a opção float32 é registrada no vetor como nome e não função tal qual "float32(xxx)", vou contornar forçando a conversão para float antes de salvar, o que não deve alterar o resultado final uma vez que a conta já foi feita em x32.
@@ -128,7 +128,7 @@ def falsa_posicao(a, b, t, mode='float64'): # Assim como na função de bisseç�
         if abs(f(p, mode)) < t: return float(p), it, e
 
         if f(x, mode) == 0: # Observa se encontramos a raiz exata, o que é improvável, mas possível.
-            return float(x), it, e
+            return x, it, e
 
         if f(a, mode) * f(p, mode) < 0:
             b = p
@@ -137,7 +137,7 @@ def falsa_posicao(a, b, t, mode='float64'): # Assim como na função de bisseç�
             a = p
             
         x = p
-    return float(x), it, e
+    return x, it, e
 
 F = [falsa_posicao(a,b,t, mode='float64'), falsa_posicao(a,b,t, mode='float32'), falsa_posicao(a,b,t, mode='math.trunc')]
 
@@ -155,13 +155,30 @@ import pandas as pd
 data_struct = {
     'Método': ['Bisseção']*3 + ['Falsa Posição']*3,
     'Modo': ['Float64', 'Float32', 'Trunc']*2,
-    'Raiz Final': [B[0][0], B[1][0], B[2][0], F[0][0], F[1][0], F[2][0]],
+    
+    # Usando str() para "congelar" o visual do número exatamente como o Python calculou
+    'Raiz Final': [
+        str(B[0][0]), str(B[1][0]), str(B[2][0]), 
+        str(F[0][0]), str(F[1][0]), str(F[2][0])
+    ],
+    
     'Iterações': [B[0][1], B[1][1], B[2][1], F[0][1], F[1][1], F[2][1]],
-    'Erro Final': [B[0][2][-1], B[1][2][-1], B[2][2][-1], 
-                   F[0][2][-1] if F[0][2] else 0, 
-                   F[1][2][-1] if F[1][2] else 0, 
-                   F[2][2][-1] if F[2][2] else 0]
+    
+    # Congelando o Erro Final em notação científica formatada para ficar elegante na tabela
+    'Erro Final': [
+        f"{B[0][2][-1]:.6e}", f"{B[1][2][-1]:.6e}", f"{B[2][2][-1]:.6e}", 
+        f"{F[0][2][-1] if F[0][2] else 0:.6e}", 
+        f"{F[1][2][-1] if F[1][2] else 0:.6e}", 
+        f"{F[2][2][-1] if F[2][2] else 0:.6e}"
+    ]
 }
+
+df_resultados = pd.DataFrame(data_struct)
+df_resultados.to_csv('./ResultadosPY/Q3.csv', index=False)
+
+# Exibindo formatado
+print("\n--- Tabela de Resultados ---")
+print(df_resultados.to_string(index=False))
 
 pd.DataFrame(data_struct).to_csv('./ResultadosPY/Q3.csv', index=False)
 
