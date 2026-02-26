@@ -53,7 +53,8 @@ def Bissecao(a, b, t, mode = "float64"):
         elif mode == "float64":
             c = (a + b) / 2
         
-
+        if c == a or c == b:
+            break
         if f(c, mode) == 0:
             break
         elif f(a, mode) * f(c, mode) < 0:
