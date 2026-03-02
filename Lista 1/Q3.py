@@ -106,37 +106,52 @@ B = [bissecao(a,b,t, mode='float64'), bissecao(a,b,t, mode='float32'), bissecao(
 # Podemos usar o mesmo princípio de Bolzano, porém mudando a forma de calcular o ponto intermediário entre 'a' e 'b'.
 
 
-def falsa_posicao(a, b, t, mode='float64'): # Assim como na função de bisseção, a função de falsa posição recebe os mesmos parâmetros de entrada, permitindo uma comparação direta entre os dois métodos sob as mesmas condições de precisão e tolerância.
+def falsa_posicao( a, b, t, mode='float64', raiz=0): # Assim como na função de bisseção, a função de falsa posição recebe os mesmos parâmetros de entrada, permitindo uma comparação direta entre os dois métodos sob as mesmas condições de precisão e tolerância.
     it = 0 # Como o resultado já foi apresentado pelo return anterior, eu reciclei a variável de iteração para usar aqui, evitando criar uma nova variável desnecessária.
-    x = a
     e = [] # Lista para armazenar os erros em cada iteração, para análise posterior.
-
+    p = []
+    
     while it < 100: # Aproximação é menor que a tolerância ou Limitada a 100 iterações (critério de parada 1 e 2)
-        # Problema de lógica: usando o 'while', a condição de continuação é a negação da condição de parada. Se queremos parar quando a distância for menor que a tolerância OU quando o número de iterações exceder 100, o loop deve continuar enquanto a distância for maior que a tolerância E o número de iterações for menor que 100.
+         # Problema de lógica: usando o 'while', a condição de continuação é a negação da condição de parada. Se queremos parar quando a distância for menor que a tolerância OU quando o número de iterações exceder 100, o loop deve continuar enquanto a distância for maior que a tolerância E o número de iterações for menor que 100.
         # O argumento de parada de A é ¬(A)
-        it += 1
         
+        p.append((a * f(b, mode) - b * f(a, mode)) / (f(b, mode) - f(a, mode))) 
+        e.append((abs(float(p[it]) - raiz)))  # Armazena o erro absoluto em relação à raiz exata para análise de convergência.
         
+        # O 'it += 1' que estava aqui desceu para o final do loop!
+
         # Fórmula da falsa Posição
-        p = (a * f(b, mode) - b * f(a, mode)) / (f(b, mode) - f(a, mode))
+        #p = (a * f(b, mode) - b * f(a, mode)) / (f(b, mode) - f(a, mode))
         
-        if mode == 'math.trunc': p = math.trunc(p*10e3)/10e3
-        if mode == 'float32': p = np.float32(p)
+        if mode == 'math.trunc': p[it] = math.trunc(p[it]*10e3)/10e3
+        if mode == 'float32': p[it] = np.float32(p[it])
         if mode == 'float64': pass
 
-        e.append((abs(float(p) - raiz))) # Armazena o erro absoluto em relação à raiz exata para análise de convergência.
-        if abs(f(p, mode)) < t: return p, it, e
+        
+       
+        if it > 0 and abs(p[it] - p[it-1]) < t:
+            it += 1 # Incrementar antes do break para o número final de iterações ficar correto
+            break
 
-        if f(x, mode) == 0: # Observa se encontramos a raiz exata, o que é improvável, mas possível.
-            return x, it, e
+    
+        if abs(f(p[it], mode)) < t: 
+            return p[it], it + 1, e
 
-        if f(a, mode) * f(p, mode) < 0:
-            b = p
+        if f(p[it], mode) == 0:  # Observa se encontramos a raiz exata, o que é improvável, mas possível.
+            x = p[-1]
+            return x, it + 1, e
 
+        
+        if f(a, mode) * f(p[it], mode) < 0:
+            b = p[it]
         else:
-            a = p
+            a = p[it]
             
-        x = p
+        # O incremento acontece aqui agora!
+        it += 1 
+           
+        
+    x = p[-1] if len(p) > 0 else None
     return x, it, e
 
 F = [falsa_posicao(a,b,t, mode='float64'), falsa_posicao(a,b,t, mode='float32'), falsa_posicao(a,b,t, mode='math.trunc')]

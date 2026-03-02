@@ -92,3 +92,43 @@ def bissecao(a, b, t, mode='float64'): # aqui eu apenas juntei todas as 3 contas
 x = 0.6931472; raiz = 0.6931471805599453
 print(x, raiz, abs(x - raiz))
 print(float(x))
+
+
+
+def falsa_posicao( a, b, t, mode='float64'): # Assim como na função de bisseção, a função de falsa posição recebe os mesmos parâmetros de entrada, permitindo uma comparação direta entre os dois métodos sob as mesmas condições de precisão e tolerância.
+    it = 0 # Como o resultado já foi apresentado pelo return anterior, eu reciclei a variável de iteração para usar aqui, evitando criar uma nova variável desnecessária.
+    e = [] # Lista para armazenar os erros em cada iteração, para análise posterior.
+    p = []
+    while it < 100:# Aproximação é menor que a tolerância ou Limitada a 100 iterações (critério de parada 1 e 2)
+        # Problema de lógica: usando o 'while', a condição de continuação é a negação da condição de parada. Se queremos parar quando a distância for menor que a tolerância OU quando o número de iterações exceder 100, o loop deve continuar enquanto a distância for maior que a tolerância E o número de iterações for menor que 100.
+        # O argumento de parada de A é ¬(A)
+        it += 1
+        p.append((a * f(b, mode) - b * f(a, mode)) / (f(b, mode) - f(a, mode))) # Fórmula da falsa posição para calcular o novo ponto de aproximação. O resultado é armazenado em uma lista 'p' para análise posterior.
+
+        # Fórmula da falsa Posição
+       #p = (a * f(b, mode) - b * f(a, mode)) / (f(b, mode) - f(a, mode))
+        
+        if mode == 'math.trunc': p[it] = math.trunc(p[it]*10e3)/10e3
+        if mode == 'float32': p[it] = np.float32(p[it])
+        if mode == 'float64': pass
+
+        e.append((abs(float(p[it]) - raiz))) # Armazena o erro absoluto em relação à raiz exata para análise de convergência.
+        if abs(p[it] - p[it-1]) < t:
+            break
+
+        if abs(f(p, mode)) < t: return p, it, e
+
+        if f(p, mode) == 0: # Observa se encontramos a raiz exata, o que é improvável, mas possível.
+            x = p[-1]
+            return x, it, e
+
+        if f(a, mode) * f(p, mode) < 0:
+            b = p[it]
+
+        else:
+            a = p[it]
+            
+        x = p[-1] if len(p) > 0 else None
+    return x, it, e
+
+F = [falsa_posicao(a,b,t, mode='float64'), falsa_posicao(a,b,t, mode='float32'), falsa_posicao(a,b,t, mode='math.trunc')]
