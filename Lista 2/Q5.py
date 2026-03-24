@@ -16,6 +16,10 @@
 
 import numpy as np
 import matplotlib.pyplot as plt
+import os
+
+# Adicionando a criacao da sub-pasta para os graficos
+os.makedirs("graficos", exist_ok=True)
 
 print("--- INTERPOLACAO DE TEMPERATURAS (DADOS SIMULADOS INMET) ---")
 # dados hipotéticos amostrados de Janeiro (São Paulo, 5 dias consecutivos)
@@ -80,9 +84,9 @@ plt.xlabel("Dia Mensal")
 plt.ylabel("Graus Celsius (°C)")
 plt.legend()
 plt.grid(True)
-plt.savefig("./graficos/Q5_temperaturas.png", dpi=100)
+plt.savefig("graficos/Q5_temperaturas.png", dpi=100)
 
-print("\n> Gráfico comparativo gerado e salvo como 'Q5_temperaturas.png'.")
+print("\n> Grafico comparativo gerado e salvo na pasta 'graficos' como 'Q5_temperaturas.png'.")
 print("> [Relatório]: Interpolações de grau muito elevado (> 5) falham miseravelmente nas bordas e sofrem do Fenômeno de Runge. Interpoladores locais tipo Splines são indicados como alternativas mais robustas.")
 
 # Referencias:

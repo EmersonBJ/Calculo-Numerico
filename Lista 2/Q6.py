@@ -11,6 +11,10 @@
 # Entrega: Código, gráficos de ajuste (dados reais vs. curva ajustada), tabela de parâmetros e relatório crítico.
 import numpy as np
 import matplotlib.pyplot as plt
+import os
+
+# Adicionando a criacao da sub-pasta para os graficos
+os.makedirs("graficos", exist_ok=True)
 
 print("--- AJUSTES MINIMOS QUADRADOS: POPULACAO DO BRASIL ---")
 # amostras historicas da IBGE adaptadas p/ decadas (1 a 6) equivalentes a (1970 a 2020)
@@ -62,9 +66,9 @@ plt.xlabel("Décadas decorridas de 1970")
 plt.ylabel("Índice Pop. (Milhões hab.)")
 plt.legend()
 plt.grid(True)
-plt.savefig("./graficos/Q6_censo_brasil.png", dpi=100)
+plt.savefig("graficos/Q6_censo_brasil.png", dpi=100)
 
-print("\n> Gráfico plotado e documentado no path do seu sistema como 'Q6_censo_brasil.png'.")
+print("\n> Grafico plotado e documentado na pasta 'graficos' como 'Q6_censo_brasil.png'.")
 print("> [Relatório Crítico]: O MSE polinomial é muito baixo provindo superaderência, porém extrapolações além de t=7 podem decair bruscamente. O modelo exponencial extrapola melhor a longo prazo sem infletir as curvas.")
 
 # Referencias:
