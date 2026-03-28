@@ -21,6 +21,7 @@ Passos:
 4. O valor da incognita é: x_i = det_Ai / det_A.
 """
 
+
 # [1] Cap 6.1 - Sistemas Lineares e Eliminacao de Gauss
 print("\nMETODO 2: ELIMINACAO DE GAUSS")
 print("-" * 50)
@@ -34,8 +35,8 @@ Passos:
 4. Backward (Substituicao): A ultima equacao fica trivial (ex: 2z = 4 -> z = 2). 
    Achado o ultimo, volta substituindo nas esquacoes de cima pra achar as outras variaveis.
 """
+-
 
-# [1] Cap 6.5 - Fatorizacao de Matrizes
 print("\nMETODO 3: DECOMPOSICAO A=LU")
 print("-" * 50)
 """
@@ -49,4 +50,3 @@ Passos:
 4. Resolve L*y = b por substituicao progressiva (de cima pra baixo) achando 'y'.
 5. Com 'y' e 'U' na mao, calcula U*x = y por substituicao regressiva (de baixo pra cima) e acha 'x'.
 """
-
