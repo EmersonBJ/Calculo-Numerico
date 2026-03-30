@@ -41,17 +41,17 @@ x = np.array([1, 2, 3])
 b = np.array([5, 6, -4])
 
 def cramer(A, b):
-    start = time.counter_time()
+    start = time.perf_counter()
     det_A = np.linalg.det(A) # Determinante da matriz A
     det_x = np.linalg.det(np.column_stack((b, A[:, 1:]))) # Determinante da matriz com a primeira coluna substituida por b
     det_y = np.linalg.det(np.column_stack((A[:, 0], b, A[:, 2]))) # Determinante da matriz com a segunda coluna substituida por b
     det_z = np.linalg.det(np.column_stack((A[:, 0], A[:, 1], b))) # Determinante da matriz com a terceira coluna substituida por b
-    end = time.counter_time()
+    end = time.perf_counter()
     return det_x / det_A, det_y / det_A, det_z / det_A, (end - start)
 
 
 # Para decomposiçao LU usamos o metodo de doolittle [1 - cap6]
-def LU(A):
+def LU(A, b):
     start = time.perf_counter()
     n = len(A)
     
@@ -78,29 +78,20 @@ def LU(A):
         
         # Por fim devemos resolver o sistema:
         # Onde y e x são vetores de tamanho n.
-        y = np.linalg.solve(L, b) # funçao linalg resolve rapidamente o sistema para Ly = b  ou melhor, y = L^-1 * b
-        x = np.linalg.solve(U, y) # funçao linalg resolve rapidamente o sistema para Ux = y ou melhor, x = U^-1 * y
+    y = np.linalg.solve(L, b) # funçao linalg resolve rapidamente o sistema para Ly = b  ou melhor, y = L^-1 * b
+    x = np.linalg.solve(U, y) # funçao linalg resolve rapidamente o sistema para Ux = y ou melhor, x = U^-1 * y
         # Optamos pela funçao pronta NumPy, uma vez que a resoluçao do sistema nao foi o foco da aulas mas sim a decomposiçao LU.
     end = time.perf_counter()
     
     return x, y, (end - start)
 
-
-#Eliminação de Gauss
-# Matrizes da imagem (Prof. Juliana)
-A = np.array([
-    [3, -1, 1],
-    [-2, 4, 0],
-    [1, 1, 5]
-], dtype=float)
-
-b = np.array([5, 6, -4], dtype=float)
-
 def eliminacao_gauss_manual(A, b):
+    start = time.perf_counter()
     n = len(b)
-    Ab = np.column_stack((A, b)) # Matriz Aumentada
+    # astype(float) GARANTE que a matriz aceitará números decimais
+    Ab = np.column_stack((A, b)).astype(float) 
 
-    # Escalonamento (Zerando abaixo da diagonal)
+    # Escalonamento
     for i in range(n):
         for k in range(i + 1, n):
             fator = Ab[k, i] / Ab[i, i]
@@ -111,24 +102,10 @@ def eliminacao_gauss_manual(A, b):
     for i in range(n - 1, -1, -1):
         x[i] = (Ab[i, n] - np.dot(Ab[i, i+1:n], x[i+1:n])) / Ab[i, i]
     
-    return x
-
-# Resultado
-solucao = eliminacao_gauss_manual(A, b)
-print(f"Solução Exata: x1={solucao[0]:.2f}, x2={solucao[1]:.2f}, x3={solucao[2]:.2f}")
+    end = time.perf_counter()
+    return x, (end - start)
 
 #Decomposição LU
-
-import numpy as np
-
-# Matrizes do exercício da Prof. Juliana
-A = np.array([
-    [3, -1, 1],
-    [-2, 4, 0],
-    [1, 1, 5]
-], dtype=float)
-
-b = np.array([5, 6, -4], dtype=float)
 
 def resolucao_direta(A, b):
     # Usando o resolvedor padrão do Python (baseado em Gauss/LU)
@@ -139,10 +116,27 @@ def resolucao_direta(A, b):
     print(f"x2 = {x[1]:.4f}")
     print(f"x3 = {x[2]:.4f}")
     return x
+# ==============================================================================
+# EXECUÇÃO DO SISTEMA 3x3 (MÉTODOS DIRETOS)
+# ==============================================================================
 
-# Executa a conta
-resolucao_direta(A, b)
+print("\n" + "="*80)
+print("RESULTADOS DO SISTEMA 3x3 (Rede Pequena)")
+print("="*80)
 
+x1_c, x2_c, x3_c, tempo_cramer = cramer(A, b)
+print(f"[Cramer] Solução Exata: x1={x1_c:.4f}, x2={x2_c:.4f}, x3={x3_c:.4f}")
+
+res_gauss, tempo_gauss = eliminacao_gauss_manual(A.copy(), b.copy())
+print(f"[Gauss]  Solução Exata: x1={res_gauss[0]:.4f}, x2={res_gauss[1]:.4f}, x3={res_gauss[2]:.4f}")
+
+res_lu_x, res_lu_y, tempo_lu = LU(A.copy(), b.copy())
+print(f"[LU]     Solução Exata: x1={res_lu_x[0]:.4f}, x2={res_lu_x[1]:.4f}, x3={res_lu_x[2]:.4f}")
+
+
+# ==============================================================================
+# MÉTODOS ITERATIVOS (Jacobi e Gauss-Seidel) - REDE 10x10
+# ==============================================================================
 
 #Jacobi
 # 1. Definição da Rede Elétrica (10 nós)
@@ -165,42 +159,54 @@ b = np.array([5, 3, 7, 2, 8, 4, 6, 1, 9, 0], dtype=float)
 
 def metodo_jacobi(A, b, tolerancia=1e-4, max_iter=100):
     n = len(b)
-    x = np.zeros(n)  # Chute inicial (todos os nós em 0)
+    x = np.zeros(n)  # Chute inicial
+    start = time.perf_counter()
     
-    print(f"{'Volta':<10} | {'Erro (Diferença)':<15}")
+    print(f"\n[JACOBI] {'Volta':<5} | {'Erro (Diferença)':<15}")
     print("-" * 30)
 
     for k in range(max_iter):
         x_novo = np.zeros(n)
-        
         for i in range(n):
-            # Soma de todos os elementos exceto a diagonal
             soma_outros = b[i] - (np.dot(A[i, :i], x[:i]) + np.dot(A[i, i+1:], x[i+1:]))
             x_novo[i] = soma_outros / A[i, i]
         
-        # Cálculo do erro absoluto (Norma Infinita)
         erro = np.linalg.norm(x_novo - x, ord=np.inf)
-        print(f"{k+1:<10} | {erro:.6f}")
+        print(f"{k+1:<13} | {erro:.6f}")
 
         if erro < tolerancia:
-            return x_novo, k + 1
+            end = time.perf_counter()
+            return x_novo, k + 1, (end - start)
         
         x = x_novo.copy()
         
-    return x, max_iter
+    end = time.perf_counter()
+    return x, max_iter, (end - start)
 
-# Execução do Algoritmo
-solucao, total_voltas = metodo_jacobi(A, b)
+def gauss_seidel(A, b, tol=1e-4, max_iter=100):
+    n = len(b)
+    x = np.zeros(n)
+    start = time.perf_counter()
+    
+    print(f"\n[GAUSS-SEIDEL] Analisando convergência...")
+    for k in range(max_iter):
+        x_anterior = x.copy()
+        for i in range(n):
+            soma_atualizados = np.dot(A[i, :i], x[:i])
+            soma_antigos = np.dot(A[i, i+1:], x_anterior[i+1:])
+            x[i] = (b[i] - soma_atualizados - soma_antigos) / A[i, i]
+        
+        if np.linalg.norm(x - x_anterior, ord=np.inf) < tol:
+            end = time.perf_counter()
+            return x, k + 1, (end - start)
+            
+    end = time.perf_counter()
+    return x, max_iter, (end - start)
+# ==============================================================================
+# EXECUÇÃO DO SISTEMA 10x10 (MÉTODOS ITERATIVOS)
+# ==============================================================================
 
-print("-" * 30)
-print(f"\nSucesso! Convergência em {total_voltas} iterações.")
-print("Energia calculada em cada nó (x):")
-for i, valor in enumerate(solucao):
-    print(f"Nó {i+1}: {valor:.4f}")
-
-#Gauss-Seidel
-# 1. Configuração da Rede 10x10 (Matriz da sua imagem)
-A = np.array([
+A_10x10 = np.array([
     [10, -1,  1, -1,  1, -1,  1, -1,  1, -1], 
     [-1, 10, -1,  1, -1,  1, -1,  1, -1,  1], 
     [ 1, -1, 10, -1,  1, -1,  1, -1,  1, -1], 
@@ -213,35 +219,64 @@ A = np.array([
     [-1,  1, -1,  1, -1,  1, -1,  1, -1, 10]
 ], dtype=float)
 
-b = np.array([5, 3, 7, 2, 8, 4, 6, 1, 9, 0], dtype=float)
+b_10x10 = np.array([5, 3, 7, 2, 8, 4, 6, 1, 9, 0], dtype=float)
 
-def gauss_seidel(A, b, tol=1e-4, max_iter=100):
-    n = len(b)
-    x = np.zeros(n)  # Chute inicial (Nós em zero)
-    
-    for k in range(max_iter):
-        x_anterior = x.copy()
-        
-        for i in range(n):
-            # A diferença aqui: usamos o 'x' atualizado na mesma iteração
-            soma_atualizados = np.dot(A[i, :i], x[:i])
-            soma_antigos = np.dot(A[i, i+1:], x_anterior[i+1:])
-            
-            x[i] = (b[i] - soma_atualizados - soma_antigos) / A[i, i]
-        
-        # Critério de Parada (Diferença entre voltas)
-        if np.linalg.norm(x - x_anterior, ord=np.inf) < tol:
-            return x, k + 1
-            
-    return x, max_iter
+solucao_jacobi, iter_jacobi, tempo_jacobi = metodo_jacobi(A_10x10, b_10x10)
+print(f"-> Jacobi convergiu em {iter_jacobi} iterações.")
 
-# Execução
-solucao, total_voltas = gauss_seidel(A, b)
+solucao_gs, iter_gs, tempo_gs = gauss_seidel(A_10x10, b_10x10)
+print(f"-> Gauss-Seidel convergiu em {iter_gs} iterações.")
+print("\nEnergia Final em cada nó (Gauss-Seidel):")
+print(np.round(solucao_gs, 4))
 
-print(f"Gauss-Seidel: Convergência em {total_voltas} iterações.")
-print("Resultados finais para os 10 nós:")
-print(np.round(solucao, 4))
+# ==============================================================================
+# 4. COMPARAÇÃO DE TEMPO E RELATÓRIO CRÍTICO
+# ==============================================================================
 
+print("\n" + "="*80)
+print("COMPARAÇÃO DE TEMPO DE EXECUÇÃO (Sistema 3x3)")
+print("="*80)
+print(f"Cramer:          {tempo_cramer:.6f} segundos")
+print(f"Gauss:           {tempo_gauss:.6f} segundos")
+print(f"Decomposição LU: {tempo_lu:.6f} segundos")
+
+print("\n" + "="*80)
+print("TABELA COMPARATIVA DOS MÉTODOS")
+print("="*80)
+print(f"{'Método':<15} | {'Operações (Complexidade)':<25} | {'Estabilidade':<15} | {'Erro/Convergência'}")
+print("-" * 80)
+print(f"{'Cramer':<15} | {'O(N!)':<25} | {'Muito Baixa':<15} | {'Exato (mas sofre com arredondamento)'}")
+print(f"{'Gauss':<15} | {'O(N³ / 3)':<25} | {'Média (s/ pivô)':<15} | {'Exato (acumula erro em N grande)'}")
+print(f"{'Fatoração LU':<15} | {'O(N³ / 3)':<25} | {'Média (s/ pivô)':<15} | {'Exato (ótimo para múltiplos b)'}")
+print(f"{'Jacobi':<15} | {'O(N²) por iteração':<25} | {'Alta':<15} | {'1e-4 (Converge em 19 iterações)'}")
+print(f"{'Gauss-Seidel':<15} | {'O(N²) por iteração':<25} | {'Alta':<15} | {'1e-4 (Converge em 13 iterações)'}")
+
+
+print("\n" + "="*80)
+print("RELATÓRIO CRÍTICO: ESCOLHA DOS MÉTODOS PARA REDES ELÉTRICAS")
+print("="*80)
+print("1. Métodos Diretos (Cramer, Gauss, LU):")
+print("   - Cramer: É totalmente inviável para redes elétricas reais. Sua complexidade")
+print("     fatorial O(N!) faz com que um simples sistema de 20 nós demore anos para ser")
+print("     calculado. Serve apenas para fins didáticos (3x3 ou 4x4).")
+print("   - Eliminação de Gauss: Eficiente para sistemas pequenos e médios. No entanto,")
+print("     sem o uso de pivoteamento parcial, pode sofrer com instabilidade numérica se")
+print("     houver nós com resistências/condutâncias nulas na diagonal principal.")
+print("   - Fatoração LU: É excelente quando a topologia da rede elétrica (Matriz A) é fixa,")
+print("     mas as cargas/fontes (Vetor b) mudam frequentemente. Fatoramos 'A' uma vez")
+print("     e resolvemos para vários cenários de consumo de energia rapidamente.")
+
+print("\n2. Métodos Iterativos (Jacobi e Gauss-Seidel):")
+print("   - Adequação: São os MAIS ADEQUADOS para grandes redes elétricas (centenas ou")
+print("     milhares de nós). Redes elétricas geram matrizes 'esparsas' (muitos zeros,")
+print("     pois um nó não se conecta fisicamente a todos os outros).")
+print("   - Desempenho: O custo computacional cai drasticamente. Como as matrizes de")
+print("     redes elétricas tendem a ser diagonalmente dominantes (a soma das conexões")
+print("     de um nó é dominada pela sua própria impedância), a convergência é garantida.")
+print("   - Jacobi vs Gauss-Seidel: Gauss-Seidel provou ser superior, convergindo mais")
+print("     rápido (menos iterações que Jacobi) por usar os valores de energia atualizados")
+print("     imediatamente durante o cálculo da mesma iteração.")
+print("="*80 + "\n")
 
 # Referencias:
 # [1] BURDEN, Richard L.; FAIRES, J. Douglas. Numerical analysis. 9. ed. Boston: Brooks/Cole; Cengage Learning, 2011.
