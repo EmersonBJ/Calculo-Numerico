@@ -5,8 +5,7 @@
 # 2. Ajuste:
 # • Um modelo polinomial (grau 2 ou 3),
 # • Um modelo exponencial do tipo P(t) = a*e^(b*t).
-# 3. Compare os ajustes via mínimos quadrados, apresentando os coeficientes, os resíduos e o erro quadrático
-# médio.
+# 3. Compare os ajustes via mínimos quadrados, apresentando os coeficientes, os resíduos e o erro quadrático médio.
 # 4. Discuta qual modelo representa melhor os dados e em que intervalo a extrapolação pode ser confiável.
 # Entrega: Código, gráficos de ajuste (dados reais vs. curva ajustada), tabela de parâmetros e relatório crítico.
 
@@ -20,21 +19,16 @@ os.makedirs("Lista 2/DATA", exist_ok=True)
 os.makedirs("Lista 2/graficos", exist_ok=True)
 
 # --- IBGE via SIDRA REST API ---
-print("Buscando dados reais do IBGE (SIDRA API)...")
-url_ibge = "https://servicodados.ibge.gov.br/api/v3/agregados/6579/periodos/2001|2005|2010|2015|2019|2020|2021|2022/variaveis/9324?localidades=N1[all]"
-
 # Fazemos a requisição. Se falhar, o r.raise_for_status() interrompe o programa na hora.
-r_ibge = requests.get(url_ibge, timeout=15)
+r_ibge = requests.get("https://servicodados.ibge.gov.br/api/v3/agregados/6579/periodos/2001|2005|2010|2015|2019|2020|2021|2022/variaveis/9324?localidades=N1[all]")
+
 r_ibge.raise_for_status()
 
-dados_json = r_ibge.json()
-serie = dados_json[0]["resultados"][0]["series"][0]["serie"]
+serie = r_ibge.json()[0]["resultados"][0]["series"][0]["serie"]
 
 anos_ibge = sorted([int(k) for k in serie.keys()])
 pop_ibge  = [float(serie[str(a)]) / 1e6 for a in anos_ibge]
-print(f"IBGE: Sucesso! {len(anos_ibge)} registros obtidos ({anos_ibge[0]}-{anos_ibge[-1]}).")
 
-# Salva CSV IBGE
 with open("Lista 2/DATA/dados_ibge.csv", "w", newline="", encoding="utf-8") as f:
     w = csv.writer(f)
     w.writerow(["ano", "populacao_milhoes"])
@@ -42,16 +36,14 @@ with open("Lista 2/DATA/dados_ibge.csv", "w", newline="", encoding="utf-8") as f
 
 
 # --- Banco Mundial via REST API ---
-print("\nBuscando dados reais do Banco Mundial...")
-url_wb = "https://api.worldbank.org/v2/country/BRA/indicator/SP.POP.TOTL?format=json&per_page=100&date=1970:2022"
 
-r_wb = requests.get(url_wb, timeout=15)
+
+r_wb = requests.get("https://api.worldbank.org/v2/country/BRA/indicator/SP.POP.TOTL?format=json&per_page=100&date=1970:2022")
 r_wb.raise_for_status()
 
 data_list = r_wb.json()[1]
 anos_censo = {1970, 1980, 1991, 2000, 2010, 2022}
 
-# Puxa os dados apenas para os anos de censo e converte para milhões
 dados_filtrados = {int(d['date']): float(d['value'])/1e6 for d in data_list if d['value'] and int(d['date']) in anos_censo}
 
 anos_wb = sorted(dados_filtrados.keys())
@@ -69,96 +61,84 @@ with open("Lista 2/DATA/dados_banco_mundial.csv", "w", newline="", encoding="utf
 
 # t = decadas desde 1970 — evita numeros grandes na algebra e facilita interpretacao
 # t=0 -> 1970, t=1 -> 1980, t=5.2 -> 2022, etc.
+# Tentamos mesclar os dados do IBGE e do Banco Mundial, mas a diferencas metodologicas tornam a curva muito irregular, entao optamos por usar apenas os dados do Banco Mundial.
+
 anos = np.array(anos_wb, dtype=float)
 pop  = np.array(pop_wb,  dtype=float)
 t    = (anos - 1970) / 10
 
-# ============================================================================
-# 3. AJUSTE POLINOMIAL - MINIMOS QUADRADOS GRAU 2
-# Formula: P(t) = a*t^2 + b*t + c
-# np.polyfit resolve o sistema normal A^T*A*coef = A^T*y internamente
-# [Ref 1] Cap 8.1 - Quadrados Minimos Discretos
-# ============================================================================
+#polyfit constrói a fórmula: Ele olha os dados e diz "A melhor equação é 2x^2 +3x+5". Ele te devolve os coeficientes [2, 3, 5].
+#polyval usa a fórmula: Ele pega esses coeficientes [2, 3, 5] e um valor de x (por exemplo, x=10) e faz a conta por você: 2(10)^2 +3(10)+5=235.
 
-coefs_poly = np.polyfit(t, pop, 2)
-poly_func  = np.poly1d(coefs_poly)
-pop_poly   = poly_func(t)
-res_poly   = pop - pop_poly
-mse_poly   = np.mean(res_poly**2)
+# • Um modelo polinomial (grau 2 ou 3)
+#np.polyfit(t, pop, 2) grau 2
+coefs2 = np.polyfit(t, pop, 2)
+MG2 = np.polyval(coefs2, t)  # predicao nos 6 pontos do censo (para calcular residuos)
+Res2 = pop - MG2
+EQM2 = np.mean(Res2**2)
 
-print("\n--- Ajuste Polinomial (grau 2) ---")
-print(f"P(t) = {coefs_poly[0]:.4f}*t^2 + {coefs_poly[1]:.4f}*t + {coefs_poly[2]:.4f}")
-print(f"MSE: {mse_poly:.4f}")
+#np.polyfit(t, pop, 3) grau 3
+coefs3 = np.polyfit(t, pop, 3)
+MG3 = np.polyval(coefs3, t)  # predicao nos 6 pontos do censo
+Res3 = pop - MG3
+EQM3 = np.mean(Res3**2)
 
-# ============================================================================
-# 4. AJUSTE EXPONENCIAL - MINIMOS QUADRADOS
-# Formula: P(t) = a * e^(b*t)
-# Linearizacao: ln(P) = ln(a) + b*t -> polyfit grau 1 no log
-# Depois desfazemos: a = e^(intercept), b = slope
-# [Ref 1] Cap 8.1
-# ============================================================================
+# • Um modelo exponencial do tipo P(t) = a*e^(b*t).
+# P(t) = a*e^(b*t) -> ln(P(t)) = ln(a) + b*t
+#np.polyfit(t, np.log(pop), 1) exponencial
+m = np.polyfit(t, np.log(pop), 1)
+b = m[0]
+a = np.exp(m[1])
 
-coefs_exp = np.polyfit(t, np.log(pop), 1)
-b_exp = coefs_exp[0]
-a_exp = np.exp(coefs_exp[1])
-pop_exp = a_exp * np.exp(b_exp * t)
-res_exp = pop - pop_exp
-mse_exp = np.mean(res_exp**2)
+MG_exp = a * np.exp(b * t)
+Res_exp = pop - MG_exp
+EQM_exp = np.mean(Res_exp**2)
 
-print("\n--- Ajuste Exponencial ---")
-print(f"P(t) = {a_exp:.4f} * e^({b_exp:.4f}*t)")
-print(f"MSE: {mse_exp:.4f}")
+# 3. Compare os resultados e discuta a unicidade do polinômio interpolador.
 
-# ============================================================================
-# 5. EXTRAPOLACAO PARA 2030
-# ============================================================================
+#GRÁFICO (DADOS REAIS VS. CURVAS AJUSTADAS)
+plt.figure(figsize=(10, 6))
 
-t_2030    = (2030 - 1970) / 10
-prev_poly = poly_func(t_2030)
-prev_exp  = a_exp * np.exp(b_exp * t_2030)
+anos_plot = np.linspace(anos.min(), anos.max(), 300)
+t_plot = (anos_plot - 1970) / 10  # t_plot tem 300 pontos — mesma dimensao de anos_plot
 
-print(f"\nExtrapolacao para 2030 (t={t_2030}):")
-print(f"  Polinomial  -> {prev_poly:.1f} milhoes")
-print(f"  Exponencial -> {prev_exp:.1f} milhoes")
+plt.plot(anos, pop, 'ko',                                                       label='Dados Reais',        markersize=7)
+plt.plot(anos_plot, np.polyval(coefs2, t_plot), 'b--',   linewidth=2,            label='Polinômio Grau 2')   # azul tracejado
+plt.plot(anos_plot, np.polyval(coefs3, t_plot), 'g-.',   linewidth=2,            label='Polinômio Grau 3')   # verde traco-ponto
+plt.plot(anos_plot, a * np.exp(b * t_plot),     'r:',    linewidth=2.5,          label='Exponencial')         # vermelho pontilhado
 
-# ============================================================================
-# 6. TABELA DE RESIDUOS
-# ============================================================================
-
-print("\n--- Tabela de Residuos ---")
-print(f"{'Ano':<6} {'Real':>8} {'Poly':>8} {'Exp':>8} {'Res.Poly':>10} {'Res.Exp':>9}")
-print("-" * 55)
-for i in range(len(anos)):
-    print(f"{int(anos[i]):<6} {pop[i]:>8.1f} {pop_poly[i]:>8.1f} {pop_exp[i]:>8.1f} {res_poly[i]:>+10.2f} {res_exp[i]:>+9.2f}")
-
-melhor = "Polinomial" if mse_poly < mse_exp else "Exponencial"
-print(f"\nMSE Polinomial: {mse_poly:.4f} | MSE Exponencial: {mse_exp:.4f}")
-print(f"Melhor ajuste (menor MSE): {melhor}")
-
-# ============================================================================
-# 7. GRAFICO
-# ============================================================================
-
-t_plot    = np.linspace(-0.5, 7.5, 200)
-anos_plot = 1970 + t_plot * 10
-
-plt.figure(figsize=(9, 5))
-plt.scatter(anos, pop, color="black", zorder=5, label="Censos IBGE/BM (dados reais)")
-plt.plot(anos_plot, poly_func(t_plot),            "b-",  label=f"Polinomial grau 2  (MSE={mse_poly:.2f})")
-plt.plot(anos_plot, a_exp * np.exp(b_exp*t_plot), "g--", label=f"Exponencial P=ae^(bt)  (MSE={mse_exp:.2f})")
-plt.axvline(2022, color="gray", linestyle=":", alpha=0.6, label="Limite dos dados (2022)")
-plt.axvline(2030, color="red",  linestyle=":", alpha=0.4, label="Extrapolacao 2030")
-plt.xlabel("Ano")
-plt.ylabel("Populacao (milhoes de hab.)")
-plt.title("Crescimento Populacional Brasil - Minimos Quadrados")
+plt.xlabel('Ano')
+plt.ylabel('População (milhões)')
+plt.title('Ajustamento por Mínimos Quadrados em Crescimento Populacional')
 plt.legend()
-plt.grid(True, alpha=0.3)
-plt.tight_layout()
-plt.savefig("Lista 2/graficos/Q6_censo_brasil.png", dpi=100)
+plt.grid(True)
+plt.savefig('Lista 2/graficos/crescimento_populacional.png')
 plt.show()
-print("Grafico salvo em Lista 2/graficos/Q6_censo_brasil.png")
 
-# Referencias:
-# [1] BURDEN, Richard L.; FAIRES, J. Douglas. Numerical analysis. 9. ed. Boston: Brooks/Cole, 2011.
-# [2] IBGE. SIDRA - Sistema IBGE de Recuperacao Automatica. api.sidra.ibge.gov.br. Tabela 6579.
-# [3] World Bank. Population, total (SP.POP.TOTL) - Brazil. data.worldbank.org.
+
+# TABELA DE PARÂMETROS E ERROS
+print("\n" + "="*80)
+print("TABELA DE PARÂMETROS E ERROS (EQM)")
+print("="*80)
+print(f"{'Modelo':<20} | {'Coeficientes':<40} | {'EQM':<10}")
+print("-" * 80)
+# Usei np.round para o print não ficar gigante na tela
+print(f"{'Polinômio Grau 2':<20} | {np.round(coefs2, 4)} | {EQM2:.6f}")
+print(f"{'Polinômio Grau 3':<20} | {np.round(coefs3, 4)} | {EQM3:.6f}")
+print(f"{'Exponencial':<20} | a={a:.4f}, b={b:.4f} | {EQM_exp:.6f}")
+print("=" * 80)
+
+# APRESENTAÇÃO DOS RESÍDUOS (Requisito 3)
+print("\nRESÍDUOS (Diferença entre Dado Real e Curva Ajustada por década):")
+print(f"- Polinômio Grau 2: {np.round(Res2, 4)}")
+print(f"- Polinômio Grau 3: {np.round(Res3, 4)}")
+print(f"- Exponencial:      {np.round(Res_exp, 4)}")
+
+#RELATÓRIO CRÍTICO
+print("\n" + "="*60)
+print("RELATÓRIO CRÍTICO")
+print("="*60)
+print("\n1. Comparação dos Ajustes:")
+print(f"   - Polinômio Grau 2: EQM = {EQM2:.6f}")
+print(f"   - Polinômio Grau 3: EQM = {EQM3:.6f}")
+print(f"   - Exponencial: EQM = {EQM_exp:.6f}")
