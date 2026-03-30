@@ -139,33 +139,28 @@ print(f"  (b) Raiz com 4 pontos: {lagrange_inverso(X4, Y4):.6f}")
 Xa = [0, 0.5, 1, 1.5, 2, 2.5, 3]
 Ya = [1.8421, 2.4694, 2.4921, 1.9047, 0.8509, -0.4112, -1.5727]
 
-# Criando um eixo X contínuo (100 pontinhos) para a linha do gráfico ficar suave
+# Criando um eixo X contínuo - 100 pontos
 x_plot = np.linspace(0, 3, 100)
 
-# Aproveitando o seu numpy para gerar as equações das curvas de 3 e 4 pontos
-p3 = np.poly1d(np.polyfit(X3, Y3, 2))
-p4 = np.poly1d(np.polyfit(X4, Y4, 3))
-
+p3 = np.poly1d(np.polyfit(X3, Y3, 2)) # 3 pontos = polinomio de grau 2
+p4 = np.poly1d(np.polyfit(X4, Y4, 3)) # 4 pontos = polinomio de grau 3
+# polyfit retorna os coeficientes do polinomio
+# poly1d transforma os coeficientes num objeto avaliavel
 plt.figure(figsize=(8, 5))
 
-# 1. Plotando todos os pontos exatos da sua tabela original (bolinhas pretas)
 plt.plot(Xa, Ya, 'ko', label='Pontos Exatos (Tabela)')
 
-# 2. Plotando as curvas geradas pelo Lagrange
 plt.plot(x_plot, p3(x_plot), 'b--', label='Aproximação 3 Pontos (Parábola)')
 plt.plot(x_plot, p4(x_plot), 'r-', label='Aproximação 4 Pontos (Cúbica)')
 
-# 3. Traçando uma linha horizontal no Y=0 para mostrar onde a raiz deveria estar
 plt.axhline(0, color='gray', linestyle=':')
 
-# Configurações visuais (padrão ABNT/Acadêmico para slides)
 plt.title('Interpolação de Lagrange: Curva Exata vs Aproximações')
 plt.xlabel('X')
 plt.ylabel('Y(x)')
 plt.legend()
 plt.grid(True, alpha=0.3)
 
-# Exibe a janela do gráfico
 plt.show()
 
 # =============================================================================

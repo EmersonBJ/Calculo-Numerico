@@ -47,7 +47,7 @@ def cramer(A, b):
     det_y = np.linalg.det(np.column_stack((A[:, 0], b, A[:, 2]))) # Determinante da matriz com a segunda coluna substituida por b
     det_z = np.linalg.det(np.column_stack((A[:, 0], A[:, 1], b))) # Determinante da matriz com a terceira coluna substituida por b
     end = time.counter_time()
-    return det_x / det_A, det_y / det_A, det_z / det_A
+    return det_x / det_A, det_y / det_A, det_z / det_A, (end - start)
 
 
 # Para decomposiçao LU usamos o metodo de doolittle [1 - cap6]
