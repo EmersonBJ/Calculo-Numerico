@@ -84,12 +84,9 @@ def LU(A):
     end = time.perf_counter()
     
     return x, y, (end - start)
-    import numpy as np
+
 
 #Eliminação de Gauss
-
-import numpy as np
-
 # Matrizes da imagem (Prof. Juliana)
 A = np.array([
     [3, -1, 1],
@@ -148,9 +145,6 @@ resolucao_direta(A, b)
 
 
 #Jacobi
-
-import numpy as np
-
 # 1. Definição da Rede Elétrica (10 nós)
 # Matriz A: Conexões da rede (Diagonal Dominante)
 A = np.array([
@@ -205,9 +199,6 @@ for i, valor in enumerate(solucao):
     print(f"Nó {i+1}: {valor:.4f}")
 
 #Gauss-Seidel
-
-import numpy as np
-
 # 1. Configuração da Rede 10x10 (Matriz da sua imagem)
 A = np.array([
     [10, -1,  1, -1,  1, -1,  1, -1,  1, -1], 
