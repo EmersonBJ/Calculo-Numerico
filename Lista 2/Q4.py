@@ -86,88 +86,61 @@ def LU(A):
     return x, y, (end - start)
 
 
-# Jacobi
+import numpy as np
+
+# 1. Definição da Rede Elétrica (10 nós)
+# Matriz A: Conexões da rede (Diagonal Dominante)
 A = np.array([
-    [10, -1, 1, -1, 1, -1, 1, -1, 1, -1], 
-    [-1, 10, -1, 1, -1, 1, -1, 1, -1, 1], 
-    [1, -1, 10, -1, 1, -1, 1, -1, 1, -1], 
-    [-1, 1, -1, 10, -1, 1, -1, 1, -1, 1], 
-    [1, -1, 1, -1, 10, -1, 1, -1, 1, -1], 
-    [-1, 1, -1, 1, -1, 10, -1, 1, -1, 1], 
-    [1, -1, 1, -1, 1, -1, 10, -1, 1, -1], 
-    [-1, 1, -1, 1, -1, 1, -1, 10, -1, 1], 
-    [1, -1, 1, -1, 1, -1, 1, -1, 10, -1], 
-    [-1, 1, -1, 1, -1, 1, -1, 1, -1, 10]
+    [10, -1,  1, -1,  1, -1,  1, -1,  1, -1], 
+    [-1, 10, -1,  1, -1,  1, -1,  1, -1,  1], 
+    [ 1, -1, 10, -1,  1, -1,  1, -1,  1, -1], 
+    [-1,  1, -1, 10, -1,  1, -1,  1, -1,  1], 
+    [ 1, -1,  1, -1, 10, -1,  1, -1,  1, -1], 
+    [-1,  1, -1,  1, -1, 10, -1,  1, -1,  1], 
+    [ 1, -1,  1, -1,  1, -1, 10, -1,  1, -1], 
+    [-1,  1, -1,  1, -1,  1, -1, 10, -1,  1], 
+    [ 1, -1,  1, -1,  1, -1,  1, -1, 10, -1], 
+    [-1,  1, -1,  1, -1,  1, -1,  1, -1, 10]
 ], dtype=float)
 
+# Vetor b: Cargas/Fontes de energia nos nós
 b = np.array([5, 3, 7, 2, 8, 4, 6, 1, 9, 0], dtype=float)
 
-# chute inicial passado para a funcao (sera sobrescrito por b* dentro dela)
+def metodo_jacobi(A, b, tolerancia=1e-4, max_iter=100):
+    n = len(b)
+    x = np.zeros(n)  # Chute inicial (todos os nós em 0)
+    
+    print(f"{'Volta':<10} | {'Erro (Diferença)':<15}")
+    print("-" * 30)
 
-t = 0.0001 # Tolerancia
-it = 100 # Numero maximo de iteracoes
-
-def Jacobi(A, b, x, t, it):
-    # Analise dos criterios de convergencia
-    # Norma ||B|| < 1 implica convergencia (criterio do Jacobi)
-    # Obs: criterio de Sassenfeld e variante especifica para Gauss-Seidel, nao para Jacobi
-
-    # Ax = b -> x^(k+1) = B*x^(k) + g
-    # Supondo det D != 0
-    # A = L + D + R, sendo L triangular inferior, D diagonal, R triangular superior
-    L = np.tril(A, -1)   # estritamente abaixo da diagonal (k=-1 exclui diagonal)
-    D = np.diag(np.diag(A))  # apenas a diagonal
-    R = np.triu(A,  1)   # estritamente acima da diagonal (k=1 exclui diagonal)
-    # Onde:
-    # lij = aij se i > j ou 0 se i <= j  (triangulo inferior sem pivo)
-    # dij = aij se i = j ou 0 se i != j  (diagonal principal)
-    # rij = aij se i < j ou 0 se i >= j  (triangulo superior sem pivo)
-    # (L + D + R)x = b
-    # Dx = b - (L + R)x
-    # x^(k+1) = D^-1 * (b - (L+R)*x^(k))
-
-    # Normalizando por D: definimos B = -D^-1*(L+R) e g = D^-1*b
-    # x^(k+1) = B*x^(k) + g
-    D_inv = np.diag(1.0 / np.diag(A))   # D^-1: cada 1/a_ii na diagonal
-    B = -np.dot(D_inv, L + R)            # matriz de iteracao do Jacobi
-    g = np.dot(D_inv, b)                 # g = D^-1*b = b* (vetor normalizado)
-
-    # chute inicial: x^(0) = b* conforme proposto pela professora em sala
-    # (equivalente a uma iteracao a partir do zero, mas mais rapido na pratica)
-    x = g.copy()
-
-    # verificacao: se ||B||_inf < 1, o metodo GARANTE convergencia
-    norma_B = np.linalg.norm(B, ord=np.inf)
-    print(f"Verificacao de convergencia: ||B||_inf = {norma_B:.4f} ", end="")
-    if norma_B < 1:
-        print("< 1 -> CONVERGENTE")
-    else:
-        print(">= 1 -> PODE NAO CONVERGIR")
-
-    start = time.perf_counter()
-
-    # loop de ponto fixo: x^(k+1) = B*x^(k) + g
-    for iteracao in range(it):
-        x_novo = np.dot(B, x) + g
-
-        # criterio de parada: norma infinita da correcao
+    for k in range(max_iter):
+        x_novo = np.zeros(n)
+        
+        for i in range(n):
+            # Soma de todos os elementos exceto a diagonal
+            soma_outros = b[i] - (np.dot(A[i, :i], x[:i]) + np.dot(A[i, i+1:], x[i+1:]))
+            x_novo[i] = soma_outros / A[i, i]
+        
+        # Cálculo do erro absoluto (Norma Infinita)
         erro = np.linalg.norm(x_novo - x, ord=np.inf)
-        if erro < t:
-            end = time.perf_counter()
-            print(f"Convergiu em {iteracao+1} iteracoes. Tempo: {end - start:.6f}s")
-            return x_novo
+        print(f"{k+1:<10} | {erro:.6f}")
 
-        x = x_novo  # atualiza APOS calcular todos os x_novo da rodada
+        if erro < tolerancia:
+            return x_novo, k + 1
+        
+        x = x_novo.copy()
+        
+    return x, max_iter
 
-    end = time.perf_counter()
-    print(f"Nao convergiu no limite de {it} iteracoes. Tempo: {end - start:.6f}s")
-    return x
+# Execução do Algoritmo
+solucao, total_voltas = metodo_jacobi(A, b)
 
-solucao = Jacobi(A, b, x, t, it)
-
-print("\n--- Solucao do Sistema 10x10 ---")
+print("-" * 30)
+print(f"\nSucesso! Convergência em {total_voltas} iterações.")
+print("Energia calculada em cada nó (x):")
 for i, valor in enumerate(solucao):
-    print(f"x{i+1} = {valor:.4f}")
+    print(f"Nó {i+1}: {valor:.4f}")
+
 
 # Referencias:
 # [1] BURDEN, Richard L.; FAIRES, J. Douglas. Numerical analysis. 9. ed. Boston: Brooks/Cole; Cengage Learning, 2011.
