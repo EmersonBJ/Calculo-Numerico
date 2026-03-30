@@ -84,7 +84,70 @@ def LU(A):
     end = time.perf_counter()
     
     return x, y, (end - start)
+    import numpy as np
 
+#Eliminação de Gauss
+
+import numpy as np
+
+# Matrizes da imagem (Prof. Juliana)
+A = np.array([
+    [3, -1, 1],
+    [-2, 4, 0],
+    [1, 1, 5]
+], dtype=float)
+
+b = np.array([5, 6, -4], dtype=float)
+
+def eliminacao_gauss_manual(A, b):
+    n = len(b)
+    Ab = np.column_stack((A, b)) # Matriz Aumentada
+
+    # Escalonamento (Zerando abaixo da diagonal)
+    for i in range(n):
+        for k in range(i + 1, n):
+            fator = Ab[k, i] / Ab[i, i]
+            Ab[k, i:] -= fator * Ab[i, i:]
+
+    # Substituição Retroativa
+    x = np.zeros(n)
+    for i in range(n - 1, -1, -1):
+        x[i] = (Ab[i, n] - np.dot(Ab[i, i+1:n], x[i+1:n])) / Ab[i, i]
+    
+    return x
+
+# Resultado
+solucao = eliminacao_gauss_manual(A, b)
+print(f"Solução Exata: x1={solucao[0]:.2f}, x2={solucao[1]:.2f}, x3={solucao[2]:.2f}")
+
+#Decomposição LU
+
+import numpy as np
+
+# Matrizes do exercício da Prof. Juliana
+A = np.array([
+    [3, -1, 1],
+    [-2, 4, 0],
+    [1, 1, 5]
+], dtype=float)
+
+b = np.array([5, 6, -4], dtype=float)
+
+def resolucao_direta(A, b):
+    # Usando o resolvedor padrão do Python (baseado em Gauss/LU)
+    x = np.linalg.solve(A, b)
+    
+    print("Resolução do Sistema 3x3:")
+    print(f"x1 = {x[0]:.4f}")
+    print(f"x2 = {x[1]:.4f}")
+    print(f"x3 = {x[2]:.4f}")
+    return x
+
+# Executa a conta
+resolucao_direta(A, b)
+
+
+#Jacobi
 
 import numpy as np
 
@@ -140,6 +203,53 @@ print(f"\nSucesso! Convergência em {total_voltas} iterações.")
 print("Energia calculada em cada nó (x):")
 for i, valor in enumerate(solucao):
     print(f"Nó {i+1}: {valor:.4f}")
+
+#Gauss-Seidel
+
+import numpy as np
+
+# 1. Configuração da Rede 10x10 (Matriz da sua imagem)
+A = np.array([
+    [10, -1,  1, -1,  1, -1,  1, -1,  1, -1], 
+    [-1, 10, -1,  1, -1,  1, -1,  1, -1,  1], 
+    [ 1, -1, 10, -1,  1, -1,  1, -1,  1, -1], 
+    [-1,  1, -1, 10, -1,  1, -1,  1, -1,  1], 
+    [ 1, -1,  1, -1, 10, -1,  1, -1,  1, -1], 
+    [-1,  1, -1,  1, -1, 10, -1,  1, -1,  1], 
+    [ 1, -1,  1, -1,  1, -1, 10, -1,  1, -1], 
+    [-1,  1, -1,  1, -1,  1, -1, 10, -1,  1], 
+    [ 1, -1,  1, -1,  1, -1,  1, -1, 10, -1], 
+    [-1,  1, -1,  1, -1,  1, -1,  1, -1, 10]
+], dtype=float)
+
+b = np.array([5, 3, 7, 2, 8, 4, 6, 1, 9, 0], dtype=float)
+
+def gauss_seidel(A, b, tol=1e-4, max_iter=100):
+    n = len(b)
+    x = np.zeros(n)  # Chute inicial (Nós em zero)
+    
+    for k in range(max_iter):
+        x_anterior = x.copy()
+        
+        for i in range(n):
+            # A diferença aqui: usamos o 'x' atualizado na mesma iteração
+            soma_atualizados = np.dot(A[i, :i], x[:i])
+            soma_antigos = np.dot(A[i, i+1:], x_anterior[i+1:])
+            
+            x[i] = (b[i] - soma_atualizados - soma_antigos) / A[i, i]
+        
+        # Critério de Parada (Diferença entre voltas)
+        if np.linalg.norm(x - x_anterior, ord=np.inf) < tol:
+            return x, k + 1
+            
+    return x, max_iter
+
+# Execução
+solucao, total_voltas = gauss_seidel(A, b)
+
+print(f"Gauss-Seidel: Convergência em {total_voltas} iterações.")
+print("Resultados finais para os 10 nós:")
+print(np.round(solucao, 4))
 
 
 # Referencias:
