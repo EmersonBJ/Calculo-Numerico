@@ -252,31 +252,5 @@ print(f"{'Jacobi':<15} | {'O(N²) por iteração':<25} | {'Alta':<15} | {'1e-4 (
 print(f"{'Gauss-Seidel':<15} | {'O(N²) por iteração':<25} | {'Alta':<15} | {'1e-4 (Converge em 13 iterações)'}")
 
 
-print("\n" + "="*80)
-print("RELATÓRIO CRÍTICO: ESCOLHA DOS MÉTODOS PARA REDES ELÉTRICAS")
-print("="*80)
-print("1. Métodos Diretos (Cramer, Gauss, LU):")
-print("   - Cramer: É totalmente inviável para redes elétricas reais. Sua complexidade")
-print("     fatorial O(N!) faz com que um simples sistema de 20 nós demore anos para ser")
-print("     calculado. Serve apenas para fins didáticos (3x3 ou 4x4).")
-print("   - Eliminação de Gauss: Eficiente para sistemas pequenos e médios. No entanto,")
-print("     sem o uso de pivoteamento parcial, pode sofrer com instabilidade numérica se")
-print("     houver nós com resistências/condutâncias nulas na diagonal principal.")
-print("   - Fatoração LU: É excelente quando a topologia da rede elétrica (Matriz A) é fixa,")
-print("     mas as cargas/fontes (Vetor b) mudam frequentemente. Fatoramos 'A' uma vez")
-print("     e resolvemos para vários cenários de consumo de energia rapidamente.")
-
-print("\n2. Métodos Iterativos (Jacobi e Gauss-Seidel):")
-print("   - Adequação: São os MAIS ADEQUADOS para grandes redes elétricas (centenas ou")
-print("     milhares de nós). Redes elétricas geram matrizes 'esparsas' (muitos zeros,")
-print("     pois um nó não se conecta fisicamente a todos os outros).")
-print("   - Desempenho: O custo computacional cai drasticamente. Como as matrizes de")
-print("     redes elétricas tendem a ser diagonalmente dominantes (a soma das conexões")
-print("     de um nó é dominada pela sua própria impedância), a convergência é garantida.")
-print("   - Jacobi vs Gauss-Seidel: Gauss-Seidel provou ser superior, convergindo mais")
-print("     rápido (menos iterações que Jacobi) por usar os valores de energia atualizados")
-print("     imediatamente durante o cálculo da mesma iteração.")
-print("="*80 + "\n")
-
 # Referencias:
 # [1] BURDEN, Richard L.; FAIRES, J. Douglas. Numerical analysis. 9. ed. Boston: Brooks/Cole; Cengage Learning, 2011.

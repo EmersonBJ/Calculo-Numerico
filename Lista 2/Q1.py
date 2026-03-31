@@ -1,4 +1,4 @@
-﻿# Question 1.
+# Question 1.
 # Encontre a raiz da funcao y(x) dada pelos pontos abaixo:
 # X:    0      | 0.5    | 1      | 1.5    | 2      | 2.5     | 3      
 # y(x): 1.8421 | 2.4694 | 2.4921 | 1.9047 | 0.8509 | -0.4112 | -1.5727
@@ -133,40 +133,91 @@ print(f"  (b) Raiz com 4 pontos: {lagrange_inverso(X4, Y4):.6f}")
 # import matplotlib.pyplot as plt
 
 # =============================================================================
-# GRÁFICO: Curvas Aproximadas vs Pontos Exatos
+# GRÁFICO: Nuvem de Dados, Curvas de Lagrange e Raízes
 # =============================================================================
 
+# Pontos de base da tabela
 Xa = [0, 0.5, 1, 1.5, 2, 2.5, 3]
 Ya = [1.8421, 2.4694, 2.4921, 1.9047, 0.8509, -0.4112, -1.5727]
 
-# Criando um eixo X contínuo - 100 pontos
-x_plot = np.linspace(0, 3, 100)
+# Polinômios (calculados novamente para garantir consistência no gráfico)
+p3 = np.poly1d(np.polyfit(X3, Y3, 2))
+p4 = np.poly1d(np.polyfit(X4, Y4, 3))
 
-p3 = np.poly1d(np.polyfit(X3, Y3, 2)) # 3 pontos = polinomio de grau 2
-p4 = np.poly1d(np.polyfit(X4, Y4, 3)) # 4 pontos = polinomio de grau 3
-# polyfit retorna os coeficientes do polinomio
-# poly1d transforma os coeficientes num objeto avaliavel
-plt.figure(figsize=(8, 5))
+# Cálculo exato das raízes no intervalo de interesse (aprox. 2.2 a 2.4)
+raiz3 = [r.real for r in p3.roots if np.isreal(r) and 2.0 < r < 2.5][0]
+raiz4 = [r.real for r in p4.roots if np.isreal(r) and 2.0 < r < 2.5][0]
 
-plt.plot(Xa, Ya, 'ko', label='Pontos Exatos (Tabela)')
+# =============================================================================
+# GRÁFICO: Destaque da Raiz (Zoom) + Visão Geral (Inset)
+# =============================================================================
 
-plt.plot(x_plot, p3(x_plot), 'b--', label='Aproximação 3 Pontos (Parábola)')
-plt.plot(x_plot, p4(x_plot), 'r-', label='Aproximação 4 Pontos (Cúbica)')
+# Pontos de base da tabela
+Xa = [0, 0.5, 1, 1.5, 2, 2.5, 3]
+Ya = [1.8421, 2.4694, 2.4921, 1.9047, 0.8509, -0.4112, -1.5727]
 
-plt.axhline(0, color='gray', linestyle=':')
+# Polinômios
+p3 = np.poly1d(np.polyfit(X3, Y3, 2))
+p4 = np.poly1d(np.polyfit(X4, Y4, 3))
 
-plt.title('Interpolação de Lagrange: Curva Exata vs Aproximações')
-plt.xlabel('X')
-plt.ylabel('Y(x)')
-plt.legend()
-plt.grid(True, alpha=0.3)
+# Cálculo exato das raízes
+raiz3 = [r.real for r in p3.roots if np.isreal(r) and 2.0 < r < 2.5][0]
+raiz4 = [r.real for r in p4.roots if np.isreal(r) and 2.0 < r < 2.5][0]
 
+# Intervalos de plotagem
+x_zoom = np.linspace(1.5, 3.1, 200) # Foco no cruzamento
+x_full = np.linspace(0, 3.2, 200)  # Escala real
+
+fig, ax = plt.subplots(figsize=(10, 6))
+
+# --- PLOT PRINCIPAL: ZOOM ---
+ax.plot(x_zoom, p3(x_zoom), color='#1f77b4', linestyle='--', linewidth=2.5, 
+        label=f'P2 (3 pts) | Raiz ≈ {raiz3:.4f}')
+ax.plot(x_zoom, p4(x_zoom), color='#d62728', linestyle='-', linewidth=2.5, 
+        label=f'P3 (4 pts) | Raiz ≈ {raiz4:.4f}')
+
+# Marcadores de pontos da tabela que caem no zoom
+mask_zoom = (np.array(Xa) >= 1.5)
+ax.scatter(np.array(Xa)[mask_zoom], np.array(Ya)[mask_zoom], color='black', s=80, 
+           label='Dados Locais', zorder=5)
+
+# Destaque das Raízes
+ax.scatter([raiz3], [0], color='cyan', edgecolors='blue', s=200, marker='X', label='Raiz P2', zorder=6)
+ax.scatter([raiz4], [0], color='gold', edgecolors='red', s=200, marker='X', label='Raiz P3', zorder=6)
+
+ax.axhline(0, color='black', linewidth=1.5)
+ax.grid(True, linestyle=':', alpha=0.6)
+ax.set_title('Zoom no Ponto de Interesse: Cruzamento do Eixo y=0', fontsize=14, fontweight='bold')
+ax.set_xlabel('x', fontsize=12)
+ax.set_ylabel('y(x)', fontsize=12)
+ax.set_xlim(1.5, 3.1)
+ax.set_ylim(-1.8, 1.2)
+ax.legend(loc='lower left', frameon=True, shadow=True)
+
+# --- INSET: ESCALA REAL (Canto Superior Direito) ---
+# [x_start, y_start, width, height] em coordenadas da figura
+ax_inset = ax.inset_axes([0.6, 0.6, 0.35, 0.35])
+ax_inset.scatter(Xa, Ya, color='black', s=10, marker='o')
+ax_inset.plot(x_full, p3(x_full), color='#1f77b4', alpha=0.4, linestyle='--')
+ax_inset.plot(x_full, p4(x_full), color='#d62728', alpha=0.4)
+ax_inset.axhline(0, color='gray', linewidth=0.8)
+
+# Retângulo indicando onde o zoom está na escala real
+rect = [1.5, -1.8, 1.6, 3.0] # [x, y, width, height]
+ax_inset.add_patch(plt.Rectangle((1.5, -1.5), 1.5, 3.2, color='gray', alpha=0.2))
+
+ax_inset.set_title('Escala Real', fontsize=10)
+ax_inset.set_xticks([0, 1.5, 3])
+ax_inset.set_yticks([-1, 0, 2])
+ax_inset.tick_params(labelsize=8)
+
+plt.tight_layout()
 plt.show()
 
 # =============================================================================
 #— usando Abordagem 2 (numpy) pela compacidade
-# Explorando multiplos aspectos da questao
 # =============================================================================
+
 
 # funcao auxiliar para os testes abaixo (usa X3/Y3, os 3 pontos proximos da raiz)
 def lagrange(x):
@@ -248,6 +299,26 @@ for ai, bi in [(1.5, 3.0), (2.0, 2.5), (2.2, 2.5), (0.0, 3.0)]:
             a_ = m
         n += 1
     print(f"  intervalo inicial [{ai}, {bi}]: raiz = {(a_+b_)/2:.6f}  ({n} iteracoes)")
+
+print("\n--- TESTE 6: Visualizacao do Fenomeno de Runge (Todos os 7 Pontos) ---")
+# Aqui usamos todos os pontos da tabela para um unico polinomio de grau 6.
+# Conforme aumentamos o grau em pontos equidistantes, as bordas tendem a oscilar.
+p6 = np.poly1d(np.polyfit(Xa, Ya, deg=6))
+x_runge = np.linspace(0, 3, 200)
+
+plt.figure(figsize=(10, 5))
+plt.plot(x_runge, p6(x_runge), 'm-', linewidth=2, label='Lagrange Grau 6 (7 pontos)')
+plt.scatter(Xa, Ya, color='black', s=40, label='Pontos da Tabela', zorder=5)
+
+plt.axhline(0, color='black', linewidth=0.8, alpha=0.5)
+plt.title('Teste de Runge: Interpolação com Todos os Pontos da Tabela', fontsize=12, fontweight='bold')
+plt.xlabel('x')
+plt.ylabel('y(x)')
+plt.legend()
+plt.grid(True, linestyle=':', alpha=0.6)
+plt.show()
+
+print("Grafico de Teste 6 gerado. Observe se as extremidades (perto de 0 e 3) apresentam oscilacoes acentuadas.")
 
 # Referencias:
 # [1] BURDEN, Richard L.; FAIRES, J. Douglas. Numerical analysis. 9. ed. Boston: Brooks/Cole; Cengage Learning, 2011.
